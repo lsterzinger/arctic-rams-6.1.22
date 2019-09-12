@@ -1,0 +1,138 @@
+************************ READ THIS FIRST **********************************
+There are two versions of RAMS here. They produce identical results.
+The "_dm" version is the "distributed memory" version. This version will
+run on supercomputers such as the NSF-Yellowstone cluster; however, grid
+nesting capability is not yet fully functioning but should be available 
+by the end of 2016. The non-dm code is fully functioning with grid nesting
+but uses a master-slave parallelization method that requires that a full
+model simulation can be loaded into the memory on the master node. Many
+supercomputers will not accomodate this if a given simulation is large. We
+plan to have the "_dm" version as the only version of RAMS once grid-nesting
+is fully functioning. Check back later in 2016 for this version. The "_dm"
+version must be run with the parallel version of HDF5. We recommend using 
+version hdf5-1.8.9-parallel, and for parallelization we recommend using
+MPICH (mpich2-1.4.1) or openMPI (openmpi-1.6.5).
+
+***************************************************************************
+Directory information:
+
+1. bin.rams  - Primary RAMS Model compile directory.
+
+2. bin.revu  - Primary REVU post-processor compile directory
+
+3. bin.block - This contains the build for creating RAMS surface
+      data lat/lon block files. The specific setup in this directory
+      is for creating SST files from hi-res data. To get info on how to
+      execute, just run the executable after compilation, and usage 
+      information will be displayed to the screen.
+      (Requires customization for any usage)
+
+4. include.mk - This file is where the user sets directory paths for RAMS 
+      code, HDF5, MPI, and compilers as well as the compiler flags and 
+      required libraries. It is the only file that needs to be modified 
+      prior to compiling within the bin.rams or bin.revu directories.
+
+5. docs - Contains the files of RAMS documentation.
+
+6. etc - Contains files that the model accesses for information related
+      to particular subroutines.
+
+7. src - Directory tree to full RAMS and REVU source code.
+
+8. test - Contains a test simulation the user can run without the
+      need for any external data.
+
+NOTE1: It is suggested that the user first go into the Documents directory and
+read the file "RAMS-Installation-README.pdf" that discusses how to build
+the model at the compile stage and make use of HDF5 and MPI parallel processing
+software.  
+
+NOTE2: To compile, your include.mk file must have all the correct paths to
+compilers and third party software as discussed below. HDF5, MPICH, and openMPI
+are freeware and can be found online with internet searches. HDF5 is necessary.
+For parallel processing, either MPICH or openMPI are necessary. To compile the
+model you will need a fortran compiler installed on your system. RAMS has shown
+to compile with PGF90 and IFORT and default flags for those compilers are given 
+in the include.mk file. REVU has shown to compile with PGF90 and IFORT. 
+You will also need a C compiler. Default usage is the free Linux GCC or MPICC 
+compiler. For HDF5, we suggest using hdf5-1.8.9-64bit-parallel version. For MPI
+we suggest using mpich2-1.4.1-64bit version. For openMPI we suggest using
+openmpi-1.6.5. You might also need to install szip, zlib, glibc if you Linux
+version does not already have these. The compression software is needed by HDF5.
+
+NOTE3: Please check the top of the object.mk files in bin.rams and bin.revu
+for override statements that override defaults in include.mk. These may be
+compiler dependent and need to coordinate or be removed depending on compiler
+choice.
+
+NOTE4: To run the model it may be necessary to set your system stack size
+limit to something larger. For linux you can do (ulimit -s unlimited).
+Without this you may encounter a segmentation fault early on at runtime.
+We have attempted to remove many circumstances that can cause stack memory
+to be too large and lead to model crashes, however, not all cases have been
+resolved. In the event of segmentation faults, try setting the ulimit as
+above to eliminate this as a problem.
+
+****************************************************************************
+QUIKSTART GUIDE:
+
+1. You will need Fortran and C compilers to proceed. RAMS has been tested
+   with PGI, INTEL, and GFORTRAN compilers and works well with all three;
+   however, Gfortran, tends to be much slower than the others. The REVU
+   post-processing package works with PGI and INTEL compilers.
+
+2. Download and Install HDF5 and either MPICH2 or openMPI (for parallel 
+   processing). HDF5 controls the model I/O and needs to be installed for 
+   RAMS to compile. For the "distributed memory" or "DM" version of RAMS,
+   HDF5 needs to be installed for parallel I/O. The MPICH2 and openMPI 
+   parallel processing software will need to be compiled on your system in 
+   order to compile RAMS for parallel processing. See detailed documentation
+   on software installation in "docs/RAMS-Installation-README.pdf".
+
+3. a. Modify "include.mk" for your ramsroot, software, and compiler paths.
+   b. Enter the "bin.rams" directory.
+      (May need to modify objects.mk for include.mk default overrides)
+   c. Type "make clean" for a fresh recompile and then type "make" to
+      compile (Proceed if compilation works. If compilation fails, it is 
+      likely a system issue and you will need to troubleshoot to make sure 
+      executable and library paths are correct. See detailed documentation in 
+      "docs/RAMS-Installation-README.txt".)
+   d. Executable will be something like 'rams-6.1.6'. By default, it will read
+      the RAMSIN namelist called 'RAMSIN'. Just execute as: 'rams-6.1.6' or
+      'rams-6.1.6 -f RAMSIN.template' to begin a simulation. Note that you
+      need to reference the RAMSIN namelist document to have a full 
+      understanding to how to modify RAMSIN for specific types of simulations.
+
+4. a. Set your system stack size "ulimit -s unlimited" to prevent
+      segmentation faults.
+   b. If compilation is successful, go to "test" directory and execute
+      the shell script "x.testruns.quik.sc" to perform a test run that
+      produces a splitting supercell simulation.
+   c. If simulation will not perform, examine any error messages, and
+      See detailed documentation in "docs/RAMS-Installation-README.pdf".
+
+5. a. If your visualization software can directly open HDF5 files, then proceed
+      to check the results of your test run. You should be able to view direct
+      RAMS HDF5 output in MATLAB and IDL (row major array format). From REVU 
+      output HDF5 files (column major array format), you should be able to use 
+      GRADS "sdfopen" command, and this format should work with the VAPOR 3D
+      software. For Vis5D, there is a utility available on the web for 
+      conversion from HDF5 format to Vis5D format. Older versions of 
+      REVU can directly create GRADS and VIS5D format files, though this is 
+      being deprecated since these can either work with HDF5 format or can be
+      converted to their native format.
+   b. For output in text format or to output derived quantities in HDF5 format,
+      you will need the REVU post-processing software installed as discussed 
+      below.
+
+6. a. To compile and use REVU post-processing, enter the "bin.revu" directory.
+      (May need to modify objects.mk for include.mk default overrides)
+   b. Type "make clean" for a fresh recompile and then type "make" to
+      compile (Proceed if compilation works. If compilation fails, it is 
+      likely a system issue and you will need to troubleshoot to make sure 
+      executable and library paths are correct. See detailed documentation in 
+      "docs/RAMS-Installation-README.txt".)
+   c. Executable will be something like 'revu-6.1.6'. It will read the REVU
+      namelist called 'REVU_IN'. Just execute 'revu-6.1.6' when your REVU_IN
+      is set up properly to find output data.
+

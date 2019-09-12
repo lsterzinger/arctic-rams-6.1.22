@@ -1,0 +1,66 @@
+#############################################################################
+# Define model source files and paths
+#############################################################################
+
+#Overrides for default include.mk
+#F_OPTS=-free -O1 -fp-model precise
+
+####################################################################
+####################################################################
+# DO NOT MODIFY ANYTHING BELOW HERE EXCEPT FOR CODE DEVELOPMENT
+####################################################################
+####################################################################
+
+#Base name for executable
+BASE=revu
+
+# Define main source.
+MAIN_OBJ = ./revu_main.o
+MAIN = $(MODEL)/revu/revu_main.f90
+
+# Define objects.
+OBJ = $(ARC)($(MODEL)/lib/an_header.o)  \
+      $(ARC)($(MODEL)/lib/rconstants.o) \
+      $(ARC)($(MODEL)/memory/grid_dims.o) \
+      $(ARC)($(MODEL)/micro/micphys.o) \
+      $(ARC)($(MODEL)/io/io_params.o) \
+      $(ARC)($(MODEL)/core/ref_sounding.o) \
+      $(ARC)($(MODEL)/memory/var_tables.o) \
+      $(ARC)($(MODEL)/memory/mem_leaf.o) \
+      $(ARC)($(MODEL)/memory/mem_scratch.o) \
+      $(ARC)($(MODEL)/memory/mem_grid.o) \
+      $(ARC)($(MODEL)/memory/mem_varinit.o) \
+      $(ARC)($(MODEL)/mpi/node_mod.o) \
+      $(ARC)($(MODEL)/memory/vtab_fill.o) \
+      $(ARC)($(MODEL)/memory/grid_struct.o) \
+      $(ARC)($(MODEL)/surface/leaf_coms.o) \
+      $(ARC)($(MODEL)/isan/isan_coms.o) \
+      $(ARC)($(MODEL)/lib/hdf5_f2c.o) \
+      $(ARC)($(MODEL)/lib/hdf5_utils.o) \
+      $(ARC)($(MODEL)/lib/charutils.o) \
+      $(ARC)($(MODEL)/lib/dateutils.o) \
+      $(ARC)($(MODEL)/lib/interp_lib.o) \
+      $(ARC)($(MODEL)/lib/map_proj.o) \
+      $(ARC)($(MODEL)/lib/numutils.o) \
+      $(ARC)($(MODEL)/lib/polarst.o) \
+      $(ARC)($(MODEL)/lib/rnamel.o) \
+      $(ARC)($(MODEL)/lib/therm_lib.o) \
+      $(ARC)($(MODEL)/lib/utils_f.o) \
+      $(ARC)($(MODEL)/lib/rsys.o) \
+      $(ARC)($(MODEL)/lib/utils_c.o) \
+      $(ARC)($(MODEL)/revu/revu_utils.o) \
+      $(ARC)($(MODEL)/revu/rhdf5_utils.o) \
+      $(ARC)($(MODEL)/revu/rhdf5_f2c.o) \
+      $(ARC)($(MODEL)/io/rcio.o) \
+      $(ARC)($(MODEL)/revu/rcommons.o) \
+      $(ARC)($(MODEL)/revu/rbat.o) \
+      $(ARC)($(MODEL)/revu/getvar.o) \
+      $(ARC)($(MODEL)/revu/textout.o) \
+      $(ARC)($(MODEL)/revu/hvlib.o) \
+      $(ARC)($(MODEL)/revu/iplt.o) \
+      $(ARC)($(MODEL)/revu/rainit.o) \
+      $(ARC)($(MODEL)/revu/rcomp.o) \
+      $(ARC)($(MODEL)/revu/revugrads.o) \
+      $(ARC)($(MODEL)/revu/vplt.o) \
+      $(ARC)($(MODEL)/revu/RAMS_hdf5.o)
+

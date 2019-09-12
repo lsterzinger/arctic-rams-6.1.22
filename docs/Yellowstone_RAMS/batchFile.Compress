@@ -1,0 +1,13 @@
+#!/bin/bash
+#BSUB -P ProjectID
+#BSUB -J Compress
+#BSUB -o /glade/scratch/yourname/Transfer/%J.out
+#BSUB -e /glade/scratch/yourname/Transfer/%J.err
+#BSUB -W 2:00
+#BSUB -q geyser
+#BSUB -n 1
+#BSUB -B
+#BSUB -N
+#
+# Run an MPI job with the "mpirun.lsf" MPI job starter.
+/glade/u/home/yourname/x.repack_nocopy.sh /glade/scratch/yourname/Transfer

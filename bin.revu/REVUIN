@@ -1,0 +1,17 @@
+ $CONTROL
+  ANPREF      = '../test/z.test.spl4/a-A',
+  REVPREF     = ' ',
+  ANATYPE     = 'TEXT',
+  IGRID       = 1,
+  IZTRAN      = 1,
+  TVAR        = '/1:15:1/',
+  ZVAR        = '/1:40:1/',
+  YVAR        = '/0:0:0/',
+  XVAR        = '/0:0:0/',
+  REVUVAR(1)  = '/totpcp/',
+  REVUVAR(2)  = '/soil_moist_ps/',
+  REVUVAR(3)  = '/snow_depth_ps/',
+!  REVUVAR(4)  = '/snow_temp_ps/',
+!  REVUVAR(5)  = '/snow_levels/',
+!  REVUVAR(6)  = '/q7/',
+ $END

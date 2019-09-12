@@ -1,0 +1,29 @@
+#############################################################################
+# Define model source files and paths
+#############################################################################
+
+#Overrides for default include.mk
+#F_OPTS=-free -O1 -fp-model precise
+
+####################################################################
+####################################################################
+# DO NOT MODIFY ANYTHING BELOW HERE EXCEPT FOR CODE DEVELOPMENT
+####################################################################
+####################################################################
+
+#Base name for executable
+BASE=mk-blkfiles
+
+# Define main source.
+MAIN_OBJ = ./mk_main.o
+MAIN = ./src/mk_main.f90
+
+# Define objects.
+OBJ  = $(ARC)($(MODEL)/memory/grid_dims.o) \
+       $(ARC)($(MODEL)/lib/hdf5_f2c.o) \
+       $(ARC)($(MODEL)/lib/hdf5_utils.o) \
+       $(ARC)($(MODEL)/lib/charutils.o) \
+       $(ARC)($(MODEL)/lib/rsys.o) \
+       $(ARC)($(MODEL)/lib/utils_c.o) \
+       $(ARC)(./src/mk_blocks.o)
+

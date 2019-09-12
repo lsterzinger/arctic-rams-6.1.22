@@ -1,0 +1,5 @@
+**/*.mod
+test/
+misc/
+**/*.h5
+include.mk
