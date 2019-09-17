@@ -244,3 +244,46 @@ return
 END SUBROUTINE wetthrm3
 
 
+SUBROUTINE temp_adj(m1,m2,m3,ia,iz,ja,jz,theta,pi0,pp)
+   use ref_sounding
+   use mem_grid
+   implicit none
+   
+   integer :: i, j, k, m1, m2, m3, ia, iz, ja, jz
+   real, dimension(m1,m2,m3) :: theta, pi, pi0, pp
+   real, dimension(m1) :: theta_av, pi_av, theta_diff, pi_diff
+   
+   
+   print *, "Doing temperature adjusting"
+   ! get average
+   pi_av = 0
+   theta_av = 0
+
+   print *, "Doing mean"
+   do i=ia,iz
+      do j=ja, jz
+         do k=1,m1
+            theta_av(k) = theta_av(k) + theta(k, i, j)
+            pi_av(k) = pi_av(k) + pi(k, i, j) + pp(k, i ,j)
+         end do
+      end do
+   end do
+
+   print *, "Doing mean 2"
+   pi_av = pi_av/(m2*m3)
+   theta_av = theta_av/(m2*m3)
+
+   
+   print *, "Setting values"
+   do i=ia,iz
+      do j=ja, jz
+         do k=1,m1
+            theta_diff(k) = theta_av(k) - th01dn(k,0)
+            pi_diff(k) = pi_av(k) - pi01dn(k,0)
+
+            theta(k, i, j) = theta(k, i, j) - (theta_diff(k)*dtlong/3600.0)
+         end do
+      end do
+   end do
+
+END SUBROUTINE
