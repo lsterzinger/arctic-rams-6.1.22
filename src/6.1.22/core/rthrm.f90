@@ -244,46 +244,126 @@ return
 END SUBROUTINE wetthrm3
 
 
-SUBROUTINE temp_adj(m1,m2,m3,ia,iz,ja,jz,theta,pi0,pp)
+SUBROUTINE temp_adj(m1,m2,m3,thp, theta)
    use ref_sounding
    use mem_grid
+   use node_mod
+   use rconstants
    implicit none
    
-   integer :: i, j, k, m1, m2, m3, ia, iz, ja, jz
-   real, dimension(m1,m2,m3) :: theta, pi, pi0, pp
-   real, dimension(m1) :: theta_av, pi_av, theta_diff, pi_diff
+   ! Lucas - variables to do calculation
+   integer :: i, j, k, m1, m2, m3
+   real :: tscale, count
+   real, dimension(m1,iz,jz) :: thp, theta
+   real, dimension(m1) :: thp_diff, tht
+   real, dimension(nmachs, m1+1) :: mparr, mparr2
    
+   !Lucas - variables to do MPI stuff
+   real, allocatable :: buff(:)
+   integer :: nwords, im, im2, ibytes, imsgtype, ihostnum
+
+   tscale =  3600 ! seconds
    
-   print *, "Doing temperature adjusting"
+   ! print *, "Doing temperature adjusting"
    ! get average
-   pi_av = 0
-   theta_av = 0
-
-   print *, "Doing mean"
+   tht = 0
+   count = 0
    do i=ia,iz
-      do j=ja, jz
+      do j=ja,jz
          do k=1,m1
-            theta_av(k) = theta_av(k) + theta(k, i, j)
-            pi_av(k) = pi_av(k) + pi(k, i, j) + pp(k, i ,j)
+            tht(k) = tht(k) + theta(k, i, j)
          end do
+         count = count + 1.0
       end do
    end do
-
-   print *, "Doing mean 2"
-   pi_av = pi_av/(m2*m3)
-   theta_av = theta_av/(m2*m3)
-
    
-   print *, "Setting values"
+   ! MPI routines will go here
+   ! Share informations between nodes, 
+   ! do not divide until all nodes have 
+   ! the same information
+   
+   mparr(mynum, 1:m1) = tht
+   mparr(mynum, m1+1) = count
+
+   nwords = nmachs*sizeof(mparr)
+   allocate(buff(nwords))
+   
+   do im = 1, nmachs
+      if (im.eq.mynum) then
+         CALL par_init_put(buff, nwords)
+         CALL par_put_float(mparr(mynum, :), m1+1)
+         do im2=1, nmachs
+            if(mynum.ne.im2) then
+               CALL par_send(im2, 10)
+               ! print *, "Sending from ", mynum, " to ", im2
+            endif
+         enddo
+      else
+         CALL par_get_new(buff, nwords, 10, ibytes, imsgtype, ihostnum)
+         CALL par_get_float(mparr(im, :), m1+1)
+      endif
+   enddo
+   deallocate(buff)
+
+   tht = 0
+   count = 0
+   ! Decompose mpi values
+   do im=1, nmachs
+      if(im.ne.mynum) then
+         tht = tht + mparr(im, 1:m1)
+         count = count + mparr(im, m1+1)
+      endif
+   enddo
+   ! Do the actual mean
+
+   tht = tht/count
+   ! print *, "Average profile", tht(1:10)
+   thp_diff = tht - th01dn(:m1,1)
+   ! print *, "Setting values"
    do i=ia,iz
       do j=ja, jz
          do k=1,m1
-            theta_diff(k) = theta_av(k) - th01dn(k,0)
-            pi_diff(k) = pi_av(k) - pi01dn(k,0)
-
-            theta(k, i, j) = theta(k, i, j) - (theta_diff(k)*dtlong/3600.0)
+            thp(k, i, j) = thp(k, i, j) - (thp_diff(k)*dtlong/tscale)
          end do
       end do
    end do
 
+END SUBROUTINE
+
+SUBROUTINE MPITEST()
+   use mem_grid
+   use node_mod
+   use rconstants
+   implicit none
+
+   real, allocatable :: buff(:)
+   integer :: nwords, im, im2, ibytes, imsgtype, ihostnum
+   real, dimension(nmachs, 3) :: mpitestvar
+   real, dimension(3) :: test
+
+   nwords = nmachs*sizeof(mpitestvar)
+   ! print *, "var size", sizeof(mpitestvar)
+   allocate(buff(nwords))
+
+   test = (/mynum, mynum*2, mynum*3/)
+   ! print *, "Machine ", mynum, test
+
+   do im=1, nmachs
+      if (im.eq.mynum) then
+         CALL par_init_put(buff, nwords)
+         CALL par_put_float(test, sizeof(test))
+
+         do im2=1,nmachs
+            if(im.ne.im2) CALL par_send(im2, 10)
+         enddo
+
+      else
+         CALL par_get_new(buff, nwords, 10, ibytes, imsgtype, ihostnum)
+         CALL par_get_float(mpitestvar(im, :), sizeof(test))
+      endif
+   enddo
+
+   ! do im=1, nmachs
+   !    print *, "Machine ", im, mpitestvar(im, :)
+   ! enddo
 END SUBROUTINE

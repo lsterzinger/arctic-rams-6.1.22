@@ -43,10 +43,10 @@ integer :: callmassflux,massfluxfreq
  CALL tend0 ()          
  CALL acctimes ('TEND0')
 
-!  CALL temp_adj(mzp,mxp,myp,ia,iz,ja,jz,&
-!                basic_g(ngrid)%theta(1,1,1),&
-!                basic_g(ngrid)%pi0(1,1,1),&
-!                basic_g(ngrid)%pp(1,1,1))
+ CALL temp_adj(mzp,mxp,myp,&
+ basic_g(ngrid)%thp(1,1,1),&
+ basic_g(ngrid)%theta(1,1,1))
+
 !  Thermodynamic diagnosis   
 !--------------------------------
 ! if (level  /=  3) then
