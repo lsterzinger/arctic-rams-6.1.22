@@ -260,9 +260,9 @@ SUBROUTINE temp_adj(m1,m2,m3,thp, theta)
    
    !Lucas - variables to do MPI stuff
    real, allocatable :: buff(:)
-   integer :: nwords, im, im2, ibytes, imsgtype, ihostnum
+   integer :: nwords, nwords_1d, im, im2, ibytes, imsgtype, ihostnum
 
-   tscale =  3600 ! seconds
+   tscale =  1800 ! seconds
    
    ! print *, "Doing temperature adjusting"
    ! get average
@@ -286,12 +286,13 @@ SUBROUTINE temp_adj(m1,m2,m3,thp, theta)
    mparr(mynum, m1+1) = count
 
    nwords = nmachs*sizeof(mparr)
+   nwords_1d = sizeof(mparr(1, :))
    allocate(buff(nwords))
    
    do im = 1, nmachs
       if (im.eq.mynum) then
          CALL par_init_put(buff, nwords)
-         CALL par_put_float(mparr(mynum, :), m1+1)
+         CALL par_put_float(mparr(mynum, :), (m1+1))
          do im2=1, nmachs
             if(mynum.ne.im2) then
                CALL par_send(im2, 10)
@@ -300,7 +301,7 @@ SUBROUTINE temp_adj(m1,m2,m3,thp, theta)
          enddo
       else
          CALL par_get_new(buff, nwords, 10, ibytes, imsgtype, ihostnum)
-         CALL par_get_float(mparr(im, :), m1+1)
+         CALL par_get_float(mparr(im, :), (m1+1))
       endif
    enddo
    deallocate(buff)
@@ -320,10 +321,12 @@ SUBROUTINE temp_adj(m1,m2,m3,thp, theta)
    ! print *, "Average profile", tht(1:10)
    thp_diff = tht - th01dn(:m1,1)
    ! print *, "Setting values"
+
+   ! print *, "DTLT", dtlt
    do i=ia,iz
       do j=ja, jz
          do k=1,m1
-            thp(k, i, j) = thp(k, i, j) - (thp_diff(k)*dtlong/tscale)
+            thp(k, i, j) = thp(k, i, j) - (thp_diff(k)*dtlt/tscale)
          end do
       end do
    end do

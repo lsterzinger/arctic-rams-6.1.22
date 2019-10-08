@@ -42,10 +42,16 @@ integer :: callmassflux,massfluxfreq
 !--------------------------------
  CALL tend0 ()          
  CALL acctimes ('TEND0')
+! if(MOD(TIME,300.0).eq.0   ) then
+!    print *, "Running temperature nudging" 
+!    CALL temp_adj(mzp,mxp,myp,&
+!       basic_g(ngrid)%thp(1,1,1),&
+!       basic_g(ngrid)%theta(1,1,1))
+! endif
 
- CALL temp_adj(mzp,mxp,myp,&
- basic_g(ngrid)%thp(1,1,1),&
- basic_g(ngrid)%theta(1,1,1))
+CALL temp_adj(mzp,mxp,myp,&
+   basic_g(ngrid)%thp(1,1,1),&
+   basic_g(ngrid)%theta(1,1,1))
 
 !  Thermodynamic diagnosis   
 !--------------------------------
@@ -61,7 +67,7 @@ integer :: callmassflux,massfluxfreq
 
 !  Radiation parameterization
 !--------------------------------
- CALL radiate (mzp,mxp,myp,ia,iz,ja,jz) 
+ CALL radiate (mzp,mxp,myp,ia,iz,ja,jz)   
  CALL acctimes ('RADIATE')
    
 !  Surface layer, soil, veggie, urban models
