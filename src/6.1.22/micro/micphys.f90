@@ -242,6 +242,12 @@ data aero_rg2rm  / 1.6791 &     !CCN
 integer, parameter :: nband=3
 real, dimension(nband,nhcat) :: bcfvt,bpwvt,bdenpow,bdiam
 
+! Lucas Sterzinger - seconds to turn rain and drizzle off 
+integer :: inoraintime
+
+! Lucas Sterzinger - turn on/off temp nudge
+integer :: itempnudge
+
 !Band Data by Habit
                !Small     !Medium   !Large
 data bcfvt /   1.26E7,    1.26E7,   234101.5, & ! 1 cloud 

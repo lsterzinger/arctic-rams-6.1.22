@@ -392,20 +392,10 @@ ccn_maxt = ccn_max * 1.e6
 if (k1==0)k1=199
 if (k2==0)k2=1
 
-! print*, 'k1',k1,zt(k1)
+!print*, 'k1',k1,zt(k1)
 do k = 1,m1
 
-!If subsaturated and if we're outside of the boundary between k1 and k2
-   ! 8  - 50m
-   ! 16 - 100m
-   ! 24 - 150m
-   ! 32 - 200m
-   ! 40 - 250m
-   ! 48 - 300m
-   ! 56 - 350m
-   ! 64 - 400m
-!   if (rv(k)/rvlsair(k).lt.0.99) then 
-  if (rv(k)/rvlsair(k).lt.0.99 .and. k.eq.1) then 
+ if (rv(k)/rvlsair(k).lt.0.99) then !If subsaturated
   !Definitely force the aerosol profile where it is subsaturated
   !Allow decrease in forced value depending on value of iforceccn
 
@@ -413,20 +403,16 @@ do k = 1,m1
   !2) decrease ft and zt(k)>blh
   !3) decrease everywhere or
   if (fccnts .gt. 0 .and. (iforceccn.eq.3 .or. &
-      (iforceccn.eq.1 .and. (zt(k).lt.blh .or. zt(k).le.zt(k1))) .or. & 
+      (iforceccn.eq.1 .and. (zt(k).lt.blh .or. zt(k).le.zt(k1))) .or. &
       (iforceccn.eq.2 .and. (zt(k).ge.blh .or. zt(k).ge.zt(k2))))) then
      aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
   else !Force the aerosol conc to be the same as at start
      aerocon(k,1)=ccn_maxt 
-   !   print *, 'WILL RESET CCN, (k, k1, k2, rh) =', k, k1, k2, rv(k)/rvlsair(k)
   endif
 
    !Set up Field of CCN mass mixing ratio (kg/kg)
    aeromas(k,1) = ((aero_medrad(1)*aero_rg2rm(1))**3.) &
                 *aerocon(k,1)/(0.23873/aero_rhosol(1))
-   
-  else
-   ! print *, 'Not resetting ccn, (k, k1, k2, rh) =', k, k1, k2, rv(k)/rvlsair(k)
  endif
 enddo
 

@@ -24,7 +24,7 @@ use mem_cuparm
 use mem_varinit
 use mem_turb
 use mem_oda,   only:if_oda
-use micphys,   only:level,icheckmic
+use micphys,   only:level,icheckmic,itempnudge
 use mem_grid
 
 implicit none
@@ -42,6 +42,13 @@ integer :: callmassflux,massfluxfreq
 !--------------------------------
  CALL tend0 ()          
  CALL acctimes ('TEND0')
+
+ if (itempnudge.eq.1) then
+   ! print *, "Nudging temperature to initial sounding"
+   CALL temp_adj(mzp,mxp,myp,&
+      basic_g(ngrid)%thp(1,1,1),&
+      basic_g(ngrid)%theta(1,1,1))
+ endif
 
 !  Thermodynamic diagnosis   
 !--------------------------------

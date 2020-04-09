@@ -38,7 +38,7 @@ character(len=*) :: group,vr,cc
 real :: ff
 integer :: ii,nv
 integer :: inrflg
-integer, parameter ::nvgrid=39,nvstrt=79,nvindat=116,nvsound=10
+integer, parameter ::nvgrid=39,nvstrt=82,nvindat=117,nvsound=10
 integer ::  igrids(nvgrid),istart(nvstrt),iindat(nvindat),isound(nvsound)
 character(len=16) :: grids(nvgrid),start(nvstrt),indat(nvindat),sound(nvsound)
 data igrids/nvgrid*0/,istart/nvstrt*0/,iindat/nvindat*0/,isound/nvsound*0/
@@ -51,7 +51,8 @@ DATA GRIDS/  &
      ,'NNDTRAT','NESTZ','NSTRATZ','POLELAT','POLELON','NINEST','NJNEST'  &
      ,'NKNEST','CENTLAT','CENTLON','NNSTTOP','NNSTBOT'/
 DATA START/  &
-      'INITIAL','NUD_TYPE','VARFPFX','VWAIT1','VWAITTOT'                 &
+      'INITIAL', 'INORAINTIME','ITEMPNUDGE', 'ITNTS' &
+      ,'NUD_TYPE','VARFPFX','VWAIT1','VWAITTOT'  &
      ,'NUDLAT','TNUDLAT','TNUDCENT','TNUDTOP','ZNUDTOP','WT_NUDGEC'      &
      ,'WT_NUDGE_UV','WT_NUDGE_TH','WT_NUDGE_PI','WT_NUDGE_RT','NUD_COND' &
      ,'TCOND_BEG','TCOND_END','T_NUDGE_RC','WT_NUDGE_G'                  &
@@ -71,7 +72,7 @@ DATA INDAT/  &
      ,'ISWRTYP','ILWRTYP','RADFRQ','LONRAD','NNQPARM','CONFRQ','WCLDBS'   &
      ,'NPATCH','NVEGPAT','ISFCL','CO2_INIT','ISOILDAT','ISNOWDAT','NVGCON'&
      ,'PCTLCON','NSLCON','ZROUGH','ALBEDO','SEATMP','DTHCON','DRTCON'     &
-     ,'SLZ','SLMSTR','STGOFF','IDIFFK','IHORGRAD','CSX','CSZ','XKHKM'     &
+     ,'SLZ','SLMSTR','STGOFF','DIVLS','IDIFFK','IHORGRAD','CSX','CSZ','XKHKM'     &
      ,'ZKHKM','AKMIN','IBUBBLE','IBUBGRD','IBDXIA','IBDXIZ','IBDYJA'      &
      ,'IBDYJZ','IBDZK1','IBDZK2','BTHP','BRTP','ICONV','ICONGR','ICICENT' &
      ,'ICJCENT','CXRAD','CYRAD','ICVERT','ICKMAX','CZRAD','ICKCENT'       &
@@ -163,6 +164,9 @@ IF(GROUP.EQ.'$MODEL_FILE_INFO') THEN
  CALL varchk (VR,GROUP,START,ISTART,NVSTRT,INRFLG)
  IF(INRFLG.EQ.1) RETURN
  IF(VR.EQ.'INITIAL')     CALL varseti (VR,INITIAL,NV,1,II,1,3)
+ IF(VR.EQ.'INORAINTIME')  CALL varseti (VR,INORAINTIME,NV,1,II,0,10000)
+ IF(VR.EQ.'ITEMPNUDGE')   CALL varseti (VR,ITEMPNUDGE,NV,1,II,0,1)
+ IF(VR.EQ.'ITNTS')       CALL varseti  (VR,ITNTS,NV,1,II,0,99999)
  IF(VR.EQ.'NUD_TYPE')    CALL varseti (VR,NUD_TYPE,NV,1,II,0,1)
  IF(VR.EQ.'VARFPFX')     CALL varsetc (VR,VARFPFX,NV,1,CC,1,strl1)
  IF(VR.EQ.'VWAIT1')      CALL varsetf (VR,VWAIT1,NV,1,FF,0.,1.e20)
@@ -277,6 +281,7 @@ IF(GROUP.EQ.'$MODEL_OPTIONS') THEN
  IF(VR.EQ.'SLZ')          CALL varsetf (VR,SLZ(NV),NV,NZGMAX,FF,-1.E5,0.)
  IF(VR.EQ.'SLMSTR')       CALL varsetf (VR,SLMSTR(NV),NV,NZGMAX,FF,0.,1.)
  IF(VR.EQ.'STGOFF')       CALL varsetf (VR,STGOFF(NV),NV,NZGMAX,FF,-50.,50.)
+ IF(VR.EQ.'DIVLS')        CALL varsetf (VR,DIVLS,NV,1,FF,-1.e4,1.e4)
  IF(VR.EQ.'IDIFFK')       CALL varseti (VR,IDIFFK(NV),NV,MAXGRDS,II,1,6)
  IF(VR.EQ.'IHORGRAD')     CALL varseti (VR,IHORGRAD,NV,1,II,1,2)
  IF(VR.EQ.'CSX')          CALL varsetf (VR,CSX(NV),NV,MAXGRDS,FF,0.,10.)
@@ -436,6 +441,9 @@ WRITE(6,'(100(3(A19,I5)/))')         &
  ,'IDELTAT=',IDELTAT                 &
  ,'NESTZ=',NESTZ                     &
  ,'INITIAL=',INITIAL                 &
+ ,'INORAINTIME=',INORAINTIME           &
+ ,'ITEMPNUDGE=',ITEMPNUDGE             &
+ ,'ITNTS=',ITNTS                    & 
  ,'NUD_TYPE=',NUD_TYPE               &
  ,'NUDLAT=',NUDLAT                   &
  ,'NUD_COND=',NUD_COND               &

@@ -20,10 +20,12 @@ Module ref_sounding
 use grid_dims
 
 implicit none
+   integer :: itnts
 
    integer :: iref,jref
-   real :: topref
-   real, dimension(nzpmax,maxgrds) :: u01dn,v01dn,pi01dn,th01dn,dn01dn,rt01dn
+   real :: topref,divls
+   real, dimension(nzpmax,maxgrds) :: u01dn,v01dn,pi01dn,th01dn,dn01dn,rt01dn,wsub
+   real, dimension(nzpmax,maxgrds) :: tntheta
    
    integer                    :: ipsflg,itsflg,irtsflg,iusflg,nsndg
    real, dimension(maxsndg)   :: us,vs,ts,thds,ps,hs,rts

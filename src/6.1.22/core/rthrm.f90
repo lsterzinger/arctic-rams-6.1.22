@@ -243,4 +243,90 @@ enddo
 return
 END SUBROUTINE wetthrm3
 
+SUBROUTINE temp_adj(m1,m2,m3,thp,theta)
+   use ref_sounding
+   use mem_grid
+   use node_mod
+   use rconstants
+   implicit none
+   
+   ! Lucas - variables to do calculation
+   integer :: i, j, k, m1, m2, m3
+   real :: tscale, count
+   real, dimension(m1,iz,jz) :: thp, theta
+   real, dimension(m1) :: thp_diff, tht
+   real, dimension(nmachs, m1+1) :: mparr, mparr2
+   
+   !Lucas - variables to do MPI stuff
+   real, allocatable :: buff(:)
+   integer :: nwords, nwords_1d, im, im2, ibytes, imsgtype, ihostnum
 
+   tscale =  itnts ! seconds
+   
+   ! print *, "Doing temperature adjusting"
+   ! get average
+   tht = 0
+   count = 0
+   do i=ia,iz
+      do j=ja,jz
+         do k=1,m1
+            tht(k) = tht(k) + theta(k, i, j)
+         end do
+         count = count + 1.0
+      end do
+   end do
+   
+   ! MPI routines will go here
+   ! Share informations between nodes, 
+   ! do not divide until all nodes have 
+   ! the same information
+   
+   mparr(mynum, 1:m1) = tht
+   mparr(mynum, m1+1) = count
+
+   nwords = nmachs*sizeof(mparr)
+   nwords_1d = sizeof(mparr(1, :))
+   allocate(buff(nwords))
+   
+   do im = 1, nmachs
+      if (im.eq.mynum) then
+         CALL par_init_put(buff, nwords)
+         CALL par_put_float(mparr(mynum, :), (m1+1))
+         do im2=1, nmachs
+            if(mynum.ne.im2) then
+               CALL par_send(im2, 10)
+               ! print *, "Sending from ", mynum, " to ", im2
+            endif
+         enddo
+      else
+         CALL par_get_new(buff, nwords, 10, ibytes, imsgtype, ihostnum)
+         CALL par_get_float(mparr(im, :), (m1+1))
+      endif
+   enddo
+   deallocate(buff)
+
+   tht = 0
+   count = 0
+   ! Decompose mpi values
+   do im=1, nmachs
+      if(im.ne.mynum) then
+         tht = tht + mparr(im, 1:m1)
+         count = count + mparr(im, m1+1)
+      endif
+   enddo
+   ! Do the actual mean
+
+   tht = tht/count
+   ! print *, "Average profile", tht(1:10)
+   thp_diff = tht - th01dn(:m1,1)
+   ! print *, "Setting values"
+
+   ! print *, "DTLT", dtlt
+   do i=ia,iz
+      do j=ja, jz
+         do k=1,m1
+            thp(k, i, j) = thp(k, i, j) - (thp_diff(k)*dtlt/tscale)
+         end do
+      end do
+   end do
+END SUBROUTINE

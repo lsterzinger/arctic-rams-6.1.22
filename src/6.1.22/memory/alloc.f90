@@ -310,7 +310,7 @@ CALL lite_varset ()
 do ng = 1, ngrids
    do nv = 1,num_var(ng)
       if(iprntstmt>=1 .and. print_msg .and. proc_type /= 2) &
-         print*,'Zeroing out array:',ng,nv,vtab_r(nv,ng)%name
+         !print*,'Zeroing out array:',ng,nv,vtab_r(nv,ng)%name
       CALL azero (vtab_r(nv,ng)%npts, vtab_r(nv,ng)%var_p)
    enddo
 enddo

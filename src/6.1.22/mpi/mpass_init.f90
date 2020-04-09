@@ -68,14 +68,14 @@ integer :: nwords, nm
 !Saleeby(2016)
 !Increment memory buffer size here if you add RAMSIN Namelist variables.
 !Add to the appropriate section below as (#-of-them * arraysize).
-nwords = 132 * 1                 & !single values
+nwords = 133 * 1                 & !single values
        +   2 * 8                 & !micro (8-hydromet types for gnu)
        +   5 * 9                 & !micro (9-aerosol species)
-       +  26 * maxgrds           & !grid-dependent (max grids)
+       +  28 * maxgrds           & !grid-dependent (max grids)
        +   3 * nzpmax            & !max vertical levels
        +   3 * nzgmax            & !max soil levels
        +   1 * maxlite * 32      & !lite variables 32 char length strings
-       + 100                       !extras so we have enough buffer
+       + 103                       !extras so we have enough buffer
 
 allocate (buff(nwords))
 
@@ -117,6 +117,9 @@ CALL par_put_float (CENTLON,MAXGRDS)
 CALL par_put_int   (NNSTTOP,MAXGRDS)
 CALL par_put_int   (NNSTBOT,MAXGRDS)
 CALL par_put_int   (INITIAL,1)
+CALL par_put_int   (INORAINTIME,1)
+CALL par_put_int   (ITEMPNUDGE,1)
+CALL par_put_int   (ITNTS,1)
 CALL par_put_int   (NUD_TYPE,1)
 CALL par_put_int   (NUDLAT,1)
 CALL par_put_float (TNUDLAT,1)
@@ -178,6 +181,7 @@ CALL par_put_float (SLZ,NZGMAX)
 CALL par_put_float (SLMSTR,NZGMAX)
 CALL par_put_float (STGOFF,NZGMAX)
 CALL par_put_float (CO2_INIT,NZPMAX)
+CALL par_put_float (DIVLS,1)
 CALL par_put_int   (IDIFFK,MAXGRDS)
 CALL par_put_int   (IHORGRAD,1)
 CALL par_put_float (CSX,MAXGRDS)
@@ -474,7 +478,7 @@ implicit none
 integer :: nwords, nm
 real, allocatable :: buff(:)
 
-nwords=4+12*nzpmax*maxgrds+6*nzpmax
+nwords=4+13*nzpmax*maxgrds+6*nzpmax
 allocate (buff(nwords))
 
 CALL par_init_put (buff,nwords)
@@ -484,6 +488,7 @@ CALL par_put_int   (itopo,1)
 CALL par_put_int   (impl,1)
 CALL par_put_float (time,1)
 
+CALL par_put_float (wsub,nzpmax*maxgrds)
 CALL par_put_float (u01dn,nzpmax*maxgrds)
 CALL par_put_float (v01dn,nzpmax*maxgrds)
 CALL par_put_float (pi01dn,nzpmax*maxgrds)
@@ -600,14 +605,14 @@ integer :: nwords,ibytes,msgtype,ihostnum,nm
 !Saleeby(2016)
 !Increment memory buffer size here if you add RAMSIN Namelist variables.
 !Add to the appropriate section below as (#-of-them * arraysize).
-nwords = 131 * 1                 & !single values
+nwords = 133 * 1                 & !single values
        +   2 * 8                 & !micro (8-hydromet types for gnu)
        +   5 * 9                 & !micro (9-aerosol species)
        +  28 * maxgrds    	 & !grid-dependent (max grids)
        +   3 * nzpmax            & !max vertical levels
        +   3 * nzgmax            & !max soil levels
        +   1 * maxlite * 32      & !lite variables 32 char length strings
-       + 100                       !extras so we have enough buffer
+       + 103                       !extras so we have enough buffer
 
 allocate (buff(nwords))
 
@@ -649,6 +654,9 @@ CALL par_get_float (CENTLON,MAXGRDS)
 CALL par_get_int   (NNSTTOP,MAXGRDS)
 CALL par_get_int   (NNSTBOT,MAXGRDS)
 CALL par_get_int   (INITIAL,1)
+CALL par_get_int   (INORAINTIME,1)
+CALL par_get_int   (ITEMPNUDGE,1)
+CALL par_get_int   (ITNTS,1)
 CALL par_get_int   (NUD_TYPE,1)
 CALL par_get_int   (NUDLAT,1)
 CALL par_get_float (TNUDLAT,1)
@@ -709,6 +717,7 @@ CALL par_get_float (SLZ,NZGMAX)
 CALL par_get_float (SLMSTR,NZGMAX)
 CALL par_get_float (STGOFF,NZGMAX)
 CALL par_get_float (CO2_INIT,NZPMAX)
+CALL par_get_float (DIVLS,1)
 CALL par_get_int   (IDIFFK,MAXGRDS)
 CALL par_get_int   (IHORGRAD,1)
 CALL par_get_float (CSX,MAXGRDS)
@@ -994,7 +1003,7 @@ implicit none
 integer :: nwords,ibytes,msgtype,ihostnum
 real, allocatable :: buff(:)
 
-nwords=4 + 12*nzpmax*maxgrds + 6*nzpmax
+nwords=4 + 13*nzpmax*maxgrds + 6*nzpmax
 allocate (buff(nwords))
 
 CALL par_get_new (buff,nwords,37,ibytes,msgtype,ihostnum)
@@ -1004,6 +1013,7 @@ CALL par_get_int   (itopo,1)
 CALL par_get_int   (impl,1)
 CALL par_get_float (time,1)
 
+CALL par_get_float (wsub,nzpmax*maxgrds)
 CALL par_get_float (u01dn,nzpmax*maxgrds)
 CALL par_get_float (v01dn,nzpmax*maxgrds)
 CALL par_get_float (pi01dn,nzpmax*maxgrds)

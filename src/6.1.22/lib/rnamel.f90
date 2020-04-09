@@ -61,7 +61,7 @@ character(len=*) :: varn
 
 ! Assign integer value read in (INUM) to the corresponding integer var
 ! (IVAR) in the NAMELIST and do a bounds check
-
+print *, "reading", varn
 if(is1.le.maxsub) then
   ivar=inum
 else

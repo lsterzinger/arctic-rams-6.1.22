@@ -22,6 +22,7 @@ use var_tables
 use mem_scratch
 use mem_grid
 use mem_basic
+use ref_sounding, only:wsub
 
 implicit none
 
@@ -84,11 +85,10 @@ if (varn .eq. 'T' .or. varn .eq. 'ALL') THEN
             scratch%vt3db(ind) = (basic_g(ngrid)%vp(k,i,j)  &
                + basic_g(ngrid)%vc(k,i,j)) * dtlto2
             scratch%vt3dc(ind) = (basic_g(ngrid)%wp(k,i,j)  &
-               + basic_g(ngrid)%wc(k,i,j)) * dtlto2
+               + basic_g(ngrid)%wc(k,i,j)) * dtlto2 + wsub(k,ngrid)*dtlt
          enddo
       enddo
    enddo
-
    CALL fa_preptc (mzp,mxp,myp        &
          ,scratch%vt3da        (1)     ,scratch%vt3db        (1)      &
          ,scratch%vt3dc        (1)     ,scratch%vt3dd        (1)      &
@@ -542,6 +542,10 @@ do j=ja,jz
       enddo
    enddo
 enddo
+
+!print*,scr1(1:m1-1,i,j)-scrf1(1:m1-1,i,j)
+
+!stop
 
 ! Clean up
 deallocate(F1)

@@ -303,6 +303,18 @@ do k = 1,nnzp(ngrid)
       / (rgas * th01dn(k,ngrid) * pi01dn(k,ngrid))
 enddo
 
+!Adele - calculate large-scale divergence
+wsub(1,ngrid)=0.
+do k = 2,nnzp(ngrid)
+   if (divls<0) then
+      wsub(k,ngrid) = divls
+   elseif (divls>0.) then
+      wsub(k,ngrid)=wsub(k-1,ngrid)-divls*(zmn(k,ngrid)-zmn(k-1,ngrid))
+   else
+      wsub(k,ngrid)=0.
+   endif
+enddo
+print*,'wsub',wsub(1:nnzp(ngrid),ngrid)
 return
 END SUBROUTINE refs1d
 

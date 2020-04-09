@@ -145,8 +145,7 @@ elseif (jnmb(1) >= 5) then
         !*******VERTICAL VELOCITY DEPENDENCY**********************************
         w_nuc = wp(k)
         if (w_nuc < .010001) then 
-           !w_nuc = .010001
-           go to 10
+           w_nuc = .010001
         elseif (w_nuc > 99.99) then
            w_nuc = 99.99
         endif
@@ -162,8 +161,7 @@ elseif (jnmb(1) >= 5) then
         !********** MEDIAN RADIUS DEPENDENCY FOR CCN *************************
         rg_nuc = rg
         if (rg_nuc < 0.01e-6) then
-           !rg_nuc = 0.011e-6
-           go to 10
+           rg_nuc = 0.011e-6
         elseif (rg_nuc > 0.96e-6) then
            rg_nuc = 0.959e-6
         endif
@@ -485,7 +483,7 @@ elseif (jnmb(1) >= 5) then
    if (rx(k,8) .ge. 1.e-12) k2dnuc = k
    if (k2dnuc .eq. 1 .and. rx(k,8) .lt. 1.e-12) k1dnuc = k + 1
   endif
-10 continue
+
  enddo !loop over all vertical levels
 
 else

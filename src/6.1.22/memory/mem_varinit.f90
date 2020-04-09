@@ -47,7 +47,6 @@ implicit none
    real :: htime1, htime2
    
    integer :: igrid_match(maxgrds,maxgrds)
-
    !-------------------------------------------------------------------------------
    integer :: nud_cond
    real :: tcond_beg, tcond_end, wt_nudgec(maxgrds),t_nudge_rc

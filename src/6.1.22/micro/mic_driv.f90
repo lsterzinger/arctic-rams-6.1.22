@@ -199,8 +199,6 @@ integer, dimension(8,2) :: mcat2,mcat22
 integer, dimension(4)   :: mcat33
 integer, dimension(11)  :: k1,k2,k3
 
-integer :: ii
-real :: satmax, phi, qvs, rslf, vapc
 real                       :: dtlt,dtlti,time
 
 real                       :: rtgt,pcpg,qpcpg,dpcpg
@@ -246,6 +244,20 @@ data mix02 /3,1,8,4,5,6,7,2/
 ! Multiplier in (sedim)
 data dpcp0 /.001,.001,.010,.010,.010,.003,.001,.001/
 save
+
+! Turn off rain and drizzle if t<1h
+! Lucas Sterzinger 3-23-2020
+if (time.le.inoraintime) then
+   ! print*, "Rain and drizzle off"
+
+   jnmb(2) = 0
+   jnmb(8) = 0
+else
+   ! print*, "Rain and drizzle on"
+
+   jnmb(2) = 5
+   jnmb(8) = 5
+endif
 
 !Adele - If doing restart from CCNLEV=0, deplete particles
 if (time .eq. fccnstart .and. iccnlev == 2) then
@@ -306,35 +318,6 @@ do icv = 1,8
    if (jnmb(lcat) .ge. 1) then
       CALL vapflux (m1,lcat,k1(lcat),k2(lcat),rv(1))
    endif
-enddo
-!***********************************************************************
-!saturation adjustment
-satmax=2.0
-do k=k1(1),k2(1)
-if (satmax.eq.1.0 .and. rx(k,1).ne.0.) then
-   condloop: do ii=1,3
-      call newtemp(m1,k1(11),k2(11),rv(1),theta(1),i,j)
-      qvs = rslf(press(k),tair(k))
-
-      phi = qvs*(17.27*237.3*alvl/(cp*(tair(k)-35.86)**2.))
-      vapc = (rv(k)/satmax-qvs)/(1.0/satmax+phi)
-
-      !If evaporation, find number of droplets to evaporate
-      !if(vapc.lt.0. .and. rx(k,1).gt.0.) then
-      !    if(abs(vapc) > rx(k,1)) vapc = -rx(k,1)
-      !    fracmass = min(1.,-vapc/rx(k,1))
-      !    cxloss = cx(k,1) * enmlttab(int(200.*fracmass+1),jhcat(k,1))
-      !    cx(k,1) = cx(k,1)-cxloss
-      !elseif (vapc.lt.0 .and. rx(k,1).eq.0) then
-      !    vapc = 0.
-      !endif
-
-      if (vapc<0.) vapc = 0. !Only do adjustment if we're condensing
-      rx(k,1) = rx(k,1) + vapc
-      rv(k) = rv(k) - vapc
-      xvapcldt(k) = xvapcldt(k) + vapc*budget_scalet
-   enddo condloop
-endif
 enddo
 !**********************************************************************
 
@@ -534,7 +517,7 @@ do lhcat = 2,nhcat
 enddo
 
 !Hydrometeor Sedimentation
-do lcat = 1,8
+do lcat = 2,8
    if (jnmb(lcat) .ge. 1) then
      if(isedim==0) &
       CALL sedim (m1,lcat,ngr,nembfall,ndensrtgt,maxkfall  &
