@@ -243,7 +243,12 @@ enddo
 return
 END SUBROUTINE wetthrm3
 
+<<<<<<< HEAD
 SUBROUTINE temp_adj(m1,m2,m3,thp,theta)
+=======
+
+SUBROUTINE temp_adj(m1,m2,m3,thp, theta)
+>>>>>>> origin/temperature_nudging
    use ref_sounding
    use mem_grid
    use node_mod
