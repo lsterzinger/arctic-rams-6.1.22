@@ -133,11 +133,12 @@ do acat=1,aerocat
    weightfac = 2650. * (1.0-aero_epsilon(acat)) !silt dust core
  endif
 
+!Adele - remove silt dust core. Not included in parcel model code
  if(iaero_chem(acat)==1) then !NH42S04
-   aero_rhosol(acat) = 1769. * aero_epsilon(acat) + weightfac
+   aero_rhosol(acat) = 1769. !* aero_epsilon(acat) + weightfac
    aero_vanthoff(acat) = 3
  elseif(iaero_chem(acat)==2) then !NaCl
-   aero_rhosol(acat) = 2165. * aero_epsilon(acat) + weightfac
+   aero_rhosol(acat) = 2165. !* aero_epsilon(acat) + weightfac
    aero_vanthoff(acat) = 2
  endif
 
