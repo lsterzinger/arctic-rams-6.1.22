@@ -402,13 +402,42 @@ do k = 1,m1
   !1) decrease bl and zt(k)<blh or 
   !2) decrease ft and zt(k)>blh
   !3) decrease everywhere or
-  if (fccnts .gt. 0 .and. (iforceccn.eq.3 .or. &
-      (iforceccn.eq.1 .and. (zt(k).lt.blh .or. zt(k).le.zt(k1))) .or. &
-      (iforceccn.eq.2 .and. (zt(k).ge.blh .or. zt(k).ge.zt(k2))))) then
-     aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
-  else !Force the aerosol conc to be the same as at start
-     aerocon(k,1)=ccn_maxt 
-  endif
+  !4) Hold reset everywhere
+  select case (iforceccn)
+  case(1) !decrease if below BLH/k1, reset elsewhere
+    if(zt(k).lt.blh .or. zt(k).le.zt(k1)) then
+      aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+    else
+      aerocon(k,1)=ccn_maxt 
+    endif
+  
+  case(2) !decrease if above BLH/k2, reset in bottom layer (k=2 is bottom layer of atmosphere)
+    if (zt(k).ge.blh .or. zt(k).ge.zt(k2))  then
+      aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+    else if (k.le.2) then
+      aerocon(k,1)=ccn_maxt
+    endif
+
+  case(3) !decrease everywhere
+    aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+
+  case(4) !hold constant above BLH/k2, and k<=2
+    if (zt(k).ge.blh .or. zt(k).ge.zt(k2) .or. k.le.2) then
+      aerocon(k,1)=ccn_maxt
+    endif
+
+  end select
+
+  ! if (fccnts .gt. 0 .and. (iforceccn.eq.3 .or. &
+  !     (iforceccn.eq.1 .and. (zt(k).lt.blh .or. zt(k).le.zt(k1))) .or. &
+  !     (iforceccn.eq.2 .and. (zt(k).ge.blh .or. zt(k).ge.zt(k2))))) then
+  !    aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+     
+  ! ! If resetting in BL (IFORCECCN=2), only reset in bottom 10 layers of BL.
+  ! else if (((iforceccn.eq.2).and.(k.le.2)).or.(iforceccn.ne.2)) then!Force the aerosol conc to be the same as at start
+  !  ! else !Force the aerosol conc to be the same as at start
+  !    aerocon(k,1)=ccn_maxt 
+  ! endif
 
    !Set up Field of CCN mass mixing ratio (kg/kg)
    aeromas(k,1) = ((aero_medrad(1)*aero_rg2rm(1))**3.) &
