@@ -405,19 +405,17 @@ do k = 1,m1
   !4) Hold reset everywhere
   select case (iforceccn)
   case(1) !decrease if below BLH/k1, reset elsewhere
-    if(zt(k).lt.blh .or. zt(k).le.zt(k1)) then
+    if(zt(k).lt.blh .and. zt(k).le.zt(k1)) then
       aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
     else
       aerocon(k,1)=ccn_maxt 
     endif
   
   case(2) !decrease if above BLH/k2, reset in bottom layer (k=2 is bottom layer of atmosphere)
-    if (zt(k).ge.blh .or. zt(k).ge.zt(k2))  then
-      aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
-    else if (k.le.2) then
-      aerocon(k,1)=ccn_maxt
-    endif
-
+    if ((zt(k).ge.blh .or. zt(k).ge.zt(k2)).and.(k2.ne.0))  aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+    
+    if (k.le.2) aerocon(k,1)=ccn_maxt
+  
   case(3) !decrease everywhere
     aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
 
@@ -425,8 +423,21 @@ do k = 1,m1
     if (zt(k).ge.blh .or. zt(k).ge.zt(k2) .or. k.le.2) then
       aerocon(k,1)=ccn_maxt
     endif
-
+    
+  case(5) !decrease bottom BL layer, reset FT
+    if(k.le.2) then
+      aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+    else if ((zt(k).ge.blh .or. zt(k).ge.zt(k2)).and.(k2.ne.0)) then
+      aerocon(k,1)=ccn_maxt
+    endif
   end select
+  ! case(5) !decrease bottom BL layer, reset FT
+  !   if(k.le.2) then
+  !     aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+  !   elseif (zt(k).ge.blh .or. zt(k).ge.zt(k2).and.(k2.ne.0)) then
+  !     aerocon(k,1)=ccn_maxt
+  !   endif
+  ! end select
 
   ! if (fccnts .gt. 0 .and. (iforceccn.eq.3 .or. &
   !     (iforceccn.eq.1 .and. (zt(k).lt.blh .or. zt(k).le.zt(k1))) .or. &
