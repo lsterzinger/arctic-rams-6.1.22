@@ -430,7 +430,16 @@ do k = 1,m1
     else if ((zt(k).ge.blh .or. zt(k).ge.zt(k2)).and.(k2.ne.0)) then
       aerocon(k,1)=ccn_maxt
     endif
+
+  case(6) !decrease FT BL1LEV
+    if(k.le.2) then
+      aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+    else if ((zt(k).ge.blh) .or. ((zt(k).ge.zt(k2)).and.(k2.ne.0))) then
+      aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+    endif
   end select
+
+
   ! case(5) !decrease bottom BL layer, reset FT
   !   if(k.le.2) then
   !     aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
