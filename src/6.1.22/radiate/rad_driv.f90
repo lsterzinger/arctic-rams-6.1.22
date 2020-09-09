@@ -1054,7 +1054,7 @@ real dzl(nrad),tp(nrad,mb),omgp(nrad,mb),gp(nrad,mb),dn0(m1)
 real oc(ncog,mb,npartob),bc(ncb,mb,npartob),gc(ncog,mb,npartg)
 real ext,om,gg,dn
 real dnfac2
-real, external ::: gammln
+real, external :: gammln
 
 real dnmin(7),dnmax(7)
 data dnmin /   1.,   10.,   1.,  125.,   10.,   10.,   10./
@@ -1074,7 +1074,7 @@ do icat = 1,mcat
             ! Radiation shape parameter fix
             ! Identified and coded by Adele,
             ! Implimented by Lucas 08-15-2020
-            dnfac2 = (1./cfmas(ihcat) * exp(0.-gammln(2.+pwmas(ihcat))) ** pwmasi(ihcat))
+            dnfac2 = (1./cfmas(ihcat) * exp(0.-gammln(2.+pwmas(ihcat)))) ** pwmasi(ihcat)
             dn = dnfac2 * emb(k,icat) ** pwmasi(ihcat) * 1.e6                                     
             ! dn = dnfac(ihcat) * emb(k,icat) ** pwmasi(ihcat) * 1.e6
             dn = max(dnmin(icat),min(dnmax(icat),dn))
