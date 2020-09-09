@@ -437,6 +437,9 @@ do k = 1,m1
     else if ((zt(k).ge.blh) .or. ((zt(k).ge.zt(k2)).and.(k2.ne.0))) then
       aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
     endif
+
+  case(7) !decrease directly to 0
+      aerocon(k,1)=0 
   end select
 
 
