@@ -49,9 +49,9 @@ integer :: callmassflux,massfluxfreq
 !       basic_g(ngrid)%theta(1,1,1))
 ! endif
 
-CALL temp_adj(mzp,mxp,myp,&
-   basic_g(ngrid)%thp(1,1,1),&
-   basic_g(ngrid)%theta(1,1,1))
+! CALL temp_adj(mzp,mxp,myp,&
+!    basic_g(ngrid)%thp(1,1,1),&
+!    basic_g(ngrid)%theta(1,1,1))
 
  if (itempnudge.eq.1) then
    ! print *, "Nudging temperature to initial sounding"

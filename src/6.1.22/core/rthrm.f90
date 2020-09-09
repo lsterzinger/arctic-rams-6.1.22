@@ -261,6 +261,8 @@ SUBROUTINE temp_adj(m1,m2,m3,thp, theta)
    real, allocatable :: buff(:)
    integer :: nwords, nwords_1d, im, im2, ibytes, imsgtype, ihostnum
 
+   ! Lucas - variables for writing of nudging to disk
+   integer :: pos, write_flag
    tscale =  itnts ! seconds
    
    ! print *, "Doing temperature adjusting"
@@ -329,4 +331,20 @@ SUBROUTINE temp_adj(m1,m2,m3,thp, theta)
          end do
       end do
    end do
+
+
+   ! Set to 1 to write temp nudge to file
+   ! note: file must exist before writing,
+   ! and be empty i.e. `touch nudge.dat`
+   write_flag = 0
+
+   ! if on node 1 (and write_flag is True), write file
+   if (mynum == 1 .and. write_flag == 1) then
+      print *, "Timestep in subroutine is ", ISTP
+      pos = ISTP * iz + 1
+      open(7, FILE='nudge.dat', status='old', action='write', form='formatted', position='append')
+      write(7, *) thp_diff
+      close(7)
+   endif
+
 END SUBROUTINE
