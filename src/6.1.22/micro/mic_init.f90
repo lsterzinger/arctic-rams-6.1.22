@@ -379,6 +379,7 @@ implicit none
 integer :: k,m1,k1,k2
 real :: ccn_maxt,time
 real, dimension(m1) :: rv
+real :: expected_val
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!! Make sure that the profile here is consistent with the init_ccn profile
@@ -440,6 +441,12 @@ do k = 1,m1
 
   case(7) !decrease directly to 0
       aerocon(k,1)=0 
+
+  case(8) ! decrease everywhere if > expected value
+   expected_val = ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+   if (aerocon(k,1) > expected_val) then
+      aerocon(k,1) = expected_val
+   endif 
   end select
 
 
