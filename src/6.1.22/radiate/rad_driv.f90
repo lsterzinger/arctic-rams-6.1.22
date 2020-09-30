@@ -1074,9 +1074,10 @@ do icat = 1,mcat
             ! Radiation shape parameter fix
             ! Identified and coded by Adele,
             ! Implimented by Lucas 08-15-2020
-            dnfac2 = (1./cfmas(ihcat) * exp(0.-gammln(2.+pwmas(ihcat)))) ** pwmasi(ihcat)
-            dn = dnfac2 * emb(k,icat) ** pwmasi(ihcat) * 1.e6                                     
-            ! dn = dnfac(ihcat) * emb(k,icat) ** pwmasi(ihcat) * 1.e6
+            !dnfac2 = (1./cfmas(ihcat) * exp(0.-gammln(2.+pwmas(ihcat)))) ** pwmasi(ihcat)
+            !dn = dnfac2 * emb(k,icat) ** pwmasi(ihcat) * 1.e6                                     
+            dn = dnfac(ihcat) * emb(k,icat) ** pwmasi(ihcat) * 1.e6
+            dn = dn * (gnu(icat)+2.)/4.
             dn = max(dnmin(icat),min(dnmax(icat),dn))
 
             do ib = 1,nb
