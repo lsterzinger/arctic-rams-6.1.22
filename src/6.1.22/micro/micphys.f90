@@ -248,6 +248,9 @@ integer :: inoraintime
 ! Lucas Sterzinger - turn on/off temp nudge
 integer :: itempnudge
 
+! Lucas Sterzinger - temp nudge static values
+real, dimension(nzpmax) :: tempnudgevals
+
 !Band Data by Habit
                !Small     !Medium   !Large
 data bcfvt /   1.26E7,    1.26E7,   234101.5, & ! 1 cloud 

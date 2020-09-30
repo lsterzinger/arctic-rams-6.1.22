@@ -72,7 +72,7 @@ nwords = 133 * 1                 & !single values
        +   2 * 8                 & !micro (8-hydromet types for gnu)
        +   5 * 9                 & !micro (9-aerosol species)
        +  28 * maxgrds           & !grid-dependent (max grids)
-       +   3 * nzpmax            & !max vertical levels
+       +   4 * nzpmax            & !max vertical levels
        +   3 * nzgmax            & !max soil levels
        +   1 * maxlite * 32      & !lite variables 32 char length strings
        + 103                       !extras so we have enough buffer
@@ -119,6 +119,7 @@ CALL par_put_int   (NNSTBOT,MAXGRDS)
 CALL par_put_int   (INITIAL,1)
 CALL par_put_int   (INORAINTIME,1)
 CALL par_put_int   (ITEMPNUDGE,1)
+CALL par_put_float (TEMPNUDGEVALS, NZPMAX)
 CALL par_put_int   (ITNTS,1)
 CALL par_put_int   (NUD_TYPE,1)
 CALL par_put_int   (NUDLAT,1)
@@ -609,7 +610,7 @@ nwords = 133 * 1                 & !single values
        +   2 * 8                 & !micro (8-hydromet types for gnu)
        +   5 * 9                 & !micro (9-aerosol species)
        +  28 * maxgrds    	 & !grid-dependent (max grids)
-       +   3 * nzpmax            & !max vertical levels
+       +   4 * nzpmax            & !max vertical levels
        +   3 * nzgmax            & !max soil levels
        +   1 * maxlite * 32      & !lite variables 32 char length strings
        + 103                       !extras so we have enough buffer
@@ -656,6 +657,7 @@ CALL par_get_int   (NNSTBOT,MAXGRDS)
 CALL par_get_int   (INITIAL,1)
 CALL par_get_int   (INORAINTIME,1)
 CALL par_get_int   (ITEMPNUDGE,1)
+CALL par_get_float (TEMPNUDGEVALS, NZPMAX)
 CALL par_get_int   (ITNTS,1)
 CALL par_get_int   (NUD_TYPE,1)
 CALL par_get_int   (NUDLAT,1)

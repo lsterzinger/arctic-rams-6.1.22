@@ -248,13 +248,14 @@ SUBROUTINE temp_adj(m1,m2,m3,thp, theta)
    use mem_grid
    use node_mod
    use rconstants
+   use micphys
    implicit none
    
    ! Lucas - variables to do calculation
    integer :: i, j, k, m1, m2, m3
    real :: tscale, count
    real, dimension(m1,iz,jz) :: thp, theta
-   real, dimension(m1) :: thp_diff, tht
+   real, dimension(m1) :: thp_diff, tht, nudge_vals
    real, dimension(nmachs, m1+1) :: mparr, mparr2
    
    !Lucas - variables to do MPI stuff
@@ -324,26 +325,42 @@ SUBROUTINE temp_adj(m1,m2,m3,thp, theta)
    ! print *, "Setting values"
 
    ! print *, "DTLT", dtlt
+   if (itempnudge.eq.1) then
    do i=ia,iz
       do j=ja, jz
          do k=1,m1
-            thp(k, i, j) = thp(k, i, j) - (thp_diff(k)*dtlt/tscale)
+            nudge_vals(k) = (thp_diff(k) * dtlt/tscale)
+            thp(k, i, j) = thp(k, i, j) - nudge_vals(k) !(thp_diff(k)*dtlt/tscale)
          end do
       end do
    end do
+
+   else if (itempnudge.eq.2) then
+       nudge_vals = tempnudgevals
+       do i=ia,iz
+         do j=ja,jz
+           do k=1,m1
+             thp(k,i,j) = thp(k,i,j) - nudge_vals(k) !(tempnudgevals(k)*dtlt/tscale)
+           end do
+         end do
+       end do
+   endif
 
 
    ! Set to 1 to write temp nudge to file
    ! note: file must exist before writing,
    ! and be empty i.e. `touch nudge.dat`
-   write_flag = 0
+   write_flag = 1 
 
    ! if on node 1 (and write_flag is True), write file
    if (mynum == 1 .and. write_flag == 1) then
       print *, "Timestep in subroutine is ", ISTP
-      pos = ISTP * iz + 1
+      
       open(7, FILE='nudge.dat', status='old', action='write', form='formatted', position='append')
-      write(7, *) thp_diff
+      
+      do k=1,m1
+         write(7, *) k, nudge_vals(k)
+      end do
       close(7)
    endif
 

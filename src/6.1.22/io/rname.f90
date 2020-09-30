@@ -38,7 +38,7 @@ character(len=*) :: group,vr,cc
 real :: ff
 integer :: ii,nv
 integer :: inrflg
-integer, parameter ::nvgrid=39,nvstrt=82,nvindat=117,nvsound=10
+integer, parameter ::nvgrid=39,nvstrt=83,nvindat=117,nvsound=10
 integer ::  igrids(nvgrid),istart(nvstrt),iindat(nvindat),isound(nvsound)
 character(len=16) :: grids(nvgrid),start(nvstrt),indat(nvindat),sound(nvsound)
 data igrids/nvgrid*0/,istart/nvstrt*0/,iindat/nvindat*0/,isound/nvsound*0/
@@ -51,7 +51,7 @@ DATA GRIDS/  &
      ,'NNDTRAT','NESTZ','NSTRATZ','POLELAT','POLELON','NINEST','NJNEST'  &
      ,'NKNEST','CENTLAT','CENTLON','NNSTTOP','NNSTBOT'/
 DATA START/  &
-      'INITIAL', 'INORAINTIME','ITEMPNUDGE', 'ITNTS' &
+      'INITIAL', 'INORAINTIME','ITEMPNUDGE', 'TEMPNUDGEVALS', 'ITNTS' &
       ,'NUD_TYPE','VARFPFX','VWAIT1','VWAITTOT'  &
      ,'NUDLAT','TNUDLAT','TNUDCENT','TNUDTOP','ZNUDTOP','WT_NUDGEC'      &
      ,'WT_NUDGE_UV','WT_NUDGE_TH','WT_NUDGE_PI','WT_NUDGE_RT','NUD_COND' &
@@ -165,7 +165,8 @@ IF(GROUP.EQ.'$MODEL_FILE_INFO') THEN
  IF(INRFLG.EQ.1) RETURN
  IF(VR.EQ.'INITIAL')     CALL varseti (VR,INITIAL,NV,1,II,1,3)
  IF(VR.EQ.'INORAINTIME')  CALL varseti (VR,INORAINTIME,NV,1,II,0,10000)
- IF(VR.EQ.'ITEMPNUDGE')   CALL varseti (VR,ITEMPNUDGE,NV,1,II,0,1)
+ IF(VR.EQ.'ITEMPNUDGE')   CALL varseti (VR,ITEMPNUDGE,NV,1,II,0,2)
+ IF(VR.EQ.'TEMPNUDGEVALS')CALL varsetf (VR,TEMPNUDGEVALS(NV),NV,NZPMAX,FF,-100.,100.)
  IF(VR.EQ.'ITNTS')       CALL varseti  (VR,ITNTS,NV,1,II,0,99999)
  IF(VR.EQ.'NUD_TYPE')    CALL varseti (VR,NUD_TYPE,NV,1,II,0,1)
  IF(VR.EQ.'VARFPFX')     CALL varsetc (VR,VARFPFX,NV,1,CC,1,strl1)
@@ -647,6 +648,9 @@ write(6,1301)(gnu(k),k=1,8)
 
 write(6,1401)(jnmb(k),k=1,8)
 1401 format(/,'JNMB=',(t8,8I3))
+
+write(6, 1501)(TEMPNUDGEVALS(k),k=1,NNZP(1))
+1501 format(/,'TEMPNUDGEVALS=',8F9.1,/,(F12.1,7F9.1))
 
 PRINT*, ' '
 WRITE(6,*)'IAERO_CHEM    AERO_EPSILON    AERO_MEDRAD-(default)'
