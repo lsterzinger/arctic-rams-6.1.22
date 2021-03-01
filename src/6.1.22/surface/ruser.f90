@@ -60,7 +60,8 @@ if(flag_on==1)then
          hfwid2=hfwid**2
          do j=1,n3
             do i=1,n2
-               topt(i,j)=hgt*hfwid2/(hfwid2+xtn(i,1)**2)
+               !topt(i,j)=hgt*hfwid2/(hfwid2+xtn(i,1)**2)
+               topt(i,j) = 3216.
                topzo(i,j) = 0.001 
             enddo
          enddo

@@ -472,6 +472,9 @@ do k = 1,m1
    !Set up Field of CCN mass mixing ratio (kg/kg)
    aeromas(k,1) = ((aero_medrad(1)*aero_rg2rm(1))**3.) &
                 *aerocon(k,1)/(0.23873/aero_rhosol(1))
+
+ else if (iforceccn == 7) then
+   aerocon(k,1)=0
  endif
 enddo
 

@@ -263,7 +263,13 @@ SUBROUTINE temp_adj(m1,m2,m3,thp, theta)
    integer :: nwords, nwords_1d, im, im2, ibytes, imsgtype, ihostnum
 
    ! Lucas - variables for writing of nudging to disk
-   integer :: pos, write_flag
+   integer :: pos, write_flag, read_flag
+   logical :: opened
+
+   integer :: hist_start_time
+
+   opened = .FALSE.
+
    tscale =  itnts ! seconds
    
    ! print *, "Doing temperature adjusting"
@@ -335,8 +341,24 @@ SUBROUTINE temp_adj(m1,m2,m3,thp, theta)
       end do
    end do
 
+   hist_start_time = 0 ! time since start of nudge.dat
+
    else if (itempnudge.eq.2) then
-       nudge_vals = tempnudgevals
+!      if(mynum.eq.1) print *, "Time = ", time
+      if(opened.EQ..FALSE.) then
+         open(8, FILE='nudge.dat', status='old', action='read')
+         opened = .TRUE.
+      endif
+
+      ! skip over first i 
+      if(hist_start_time.NE.0) then
+         do i=1,hist_start_time - 1 
+            read(8, *) nudge_vals
+         enddo
+         hist_start_time=0
+      endif
+       read(8, *) nudge_vals
+       if (mynum.eq.1) print *, "Reading nudge vals ", nudge_vals(1:5)
        do i=ia,iz
          do j=ja,jz
            do k=1,m1
@@ -350,18 +372,19 @@ SUBROUTINE temp_adj(m1,m2,m3,thp, theta)
    ! Set to 1 to write temp nudge to file
    ! note: file must exist before writing,
    ! and be empty i.e. `touch nudge.dat`
-   write_flag = 1 
+   write_flag = 0 
 
    ! if on node 1 (and write_flag is True), write file
    if (mynum == 1 .and. write_flag == 1) then
       print *, "Timestep in subroutine is ", ISTP
       
-      open(7, FILE='nudge.dat', status='old', action='write', form='formatted', position='append')
+      if(opened.EQ..FALSE.) then
+         open(7, FILE='nudge.dat', status='old', action='write', position='append')
+         opened = .TRUE.
+      endif
       
-      do k=1,m1
-         write(7, *) k, nudge_vals(k)
-      end do
-      close(7)
+      write(7, '(200E15.7)') nudge_vals
+      
    endif
 
 END SUBROUTINE
