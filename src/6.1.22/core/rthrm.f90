@@ -345,7 +345,7 @@ SUBROUTINE temp_adj(m1,m2,m3,thp, theta)
 
    else if (itempnudge.eq.2) then
 !      if(mynum.eq.1) print *, "Time = ", time
-      if(opened.EQ..FALSE.) then
+      if(opened.EQV..FALSE.) then
          open(8, FILE='nudge.dat', status='old', action='read')
          opened = .TRUE.
       endif
@@ -378,7 +378,7 @@ SUBROUTINE temp_adj(m1,m2,m3,thp, theta)
    if (mynum == 1 .and. write_flag == 1) then
       print *, "Timestep in subroutine is ", ISTP
       
-      if(opened.EQ..FALSE.) then
+      if(opened.EQV..FALSE.) then
          open(7, FILE='nudge.dat', status='old', action='write', position='append')
          opened = .TRUE.
       endif

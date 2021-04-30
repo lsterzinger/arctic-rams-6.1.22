@@ -129,7 +129,7 @@ real, dimension(nzpmax) :: xinuchomrt,xinuccontrt,xinucifnrt,xinuchazrt   &
 real, dimension(nzpmax) :: xdust1cldrt,xdust2cldrt,xdust1drzrt,xdust2drzrt
 
 !******Variables Needed for BUBBLE SIMULATION ******************************
-integer :: ibubble,ibubgrd,ibdxia,ibdxiz,ibdyja,ibdyjz,ibdzk1,ibdzk2
+integer :: ibubble,ibubbleall,ibubgrd,ibdxia,ibdxiz,ibdyja,ibdyjz,ibdzk1,ibdzk2
 real :: bthp,brtp
 
 !******Variables Needed for CONVERGENCE FORCING ****************************

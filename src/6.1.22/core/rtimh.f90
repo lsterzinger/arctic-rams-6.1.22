@@ -24,7 +24,7 @@ use mem_cuparm
 use mem_varinit
 use mem_turb
 use mem_oda,   only:if_oda
-use micphys,   only:level,icheckmic,itempnudge
+use micphys,   only:level,icheckmic,itempnudge,iforceccn,fccnstart
 use mem_grid
 
 implicit none
@@ -53,7 +53,7 @@ integer :: callmassflux,massfluxfreq
 !    basic_g(ngrid)%thp(1,1,1),&
 !    basic_g(ngrid)%theta(1,1,1))
 
- if (itempnudge.ne.0) then
+if ((itempnudge.ne.0) .and. (time < fccnstart) .and. (iforceccn.ne.0)) then
    ! print *, "Nudging temperature to initial sounding"
    CALL temp_adj(mzp,mxp,myp,&
       basic_g(ngrid)%thp(1,1,1),&

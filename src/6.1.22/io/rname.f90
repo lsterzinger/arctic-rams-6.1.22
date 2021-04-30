@@ -38,7 +38,7 @@ character(len=*) :: group,vr,cc
 real :: ff
 integer :: ii,nv
 integer :: inrflg
-integer, parameter ::nvgrid=39,nvstrt=83,nvindat=117,nvsound=10
+integer, parameter ::nvgrid=39,nvstrt=83,nvindat=118,nvsound=10
 integer ::  igrids(nvgrid),istart(nvstrt),iindat(nvindat),isound(nvsound)
 character(len=16) :: grids(nvgrid),start(nvstrt),indat(nvindat),sound(nvsound)
 data igrids/nvgrid*0/,istart/nvstrt*0/,iindat/nvindat*0/,isound/nvsound*0/
@@ -73,7 +73,7 @@ DATA INDAT/  &
      ,'NPATCH','NVEGPAT','ISFCL','CO2_INIT','ISOILDAT','ISNOWDAT','NVGCON'&
      ,'PCTLCON','NSLCON','ZROUGH','ALBEDO','SEATMP','DTHCON','DRTCON'     &
      ,'SLZ','SLMSTR','STGOFF','DIVLS','IDIFFK','IHORGRAD','CSX','CSZ','XKHKM'     &
-     ,'ZKHKM','AKMIN','IBUBBLE','IBUBGRD','IBDXIA','IBDXIZ','IBDYJA'      &
+     ,'ZKHKM','AKMIN','IBUBBLE','IBUBBLEALL','IBUBGRD','IBDXIA','IBDXIZ','IBDYJA'      &
      ,'IBDYJZ','IBDZK1','IBDZK2','BTHP','BRTP','ICONV','ICONGR','ICICENT' &
      ,'ICJCENT','CXRAD','CYRAD','ICVERT','ICKMAX','CZRAD','ICKCENT'       &
      ,'CDIVMAX','CTAU','CTMAX','LEVEL','ICHECKMIC','ITRACER','ITRACHIST'  &
@@ -291,6 +291,7 @@ IF(GROUP.EQ.'$MODEL_OPTIONS') THEN
  IF(VR.EQ.'ZKHKM')        CALL varsetf (VR,ZKHKM(NV),NV,MAXGRDS,FF,0.,100.)
  IF(VR.EQ.'AKMIN')        CALL varsetf (VR,AKMIN(NV),NV,MAXGRDS,FF,0.,5.)
  IF(VR.EQ.'IBUBBLE')      CALL varseti (VR,IBUBBLE,NV,1,II,0,3)
+ IF(VR.EQ.'IBUBBLEALL')   CALL varseti (VR,IBUBBLEALL,NV,1,II,0,1)
  IF(VR.EQ.'IBUBGRD')      CALL varseti (VR,IBUBGRD,NV,1,II,1,10)
  IF(VR.EQ.'IBDXIA')       CALL varseti (VR,IBDXIA,NV,1,II,1,3000)
  IF(VR.EQ.'IBDXIZ')       CALL varseti (VR,IBDXIZ,NV,1,II,1,3000)
@@ -473,6 +474,7 @@ WRITE(6,'(100(3(A19,I5)/))')         &
  ,'NSLCON=',NSLCON                   &
  ,'IHORGRAD=',IHORGRAD               &
  ,'IBUBBLE=',IBUBBLE                 &
+ ,'IBUBBLEALL=',IBUBBLEALL           &
  ,'IBUBGRD=',IBUBGRD                 &
  ,'IBDXIA=',IBDXIA                   &
  ,'IBDXIZ=',IBDXIZ                   &
