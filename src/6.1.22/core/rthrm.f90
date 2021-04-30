@@ -243,28 +243,32 @@ enddo
 return
 END SUBROUTINE wetthrm3
 
-<<<<<<< HEAD
-SUBROUTINE temp_adj(m1,m2,m3,thp,theta)
-=======
-
 SUBROUTINE temp_adj(m1,m2,m3,thp, theta)
->>>>>>> origin/temperature_nudging
    use ref_sounding
    use mem_grid
    use node_mod
    use rconstants
+   use micphys
    implicit none
    
    ! Lucas - variables to do calculation
    integer :: i, j, k, m1, m2, m3
    real :: tscale, count
    real, dimension(m1,iz,jz) :: thp, theta
-   real, dimension(m1) :: thp_diff, tht
+   real, dimension(m1) :: thp_diff, tht, nudge_vals
    real, dimension(nmachs, m1+1) :: mparr, mparr2
    
    !Lucas - variables to do MPI stuff
    real, allocatable :: buff(:)
    integer :: nwords, nwords_1d, im, im2, ibytes, imsgtype, ihostnum
+
+   ! Lucas - variables for writing of nudging to disk
+   integer :: pos, write_flag, read_flag
+   logical :: opened
+
+   integer :: hist_start_time
+
+   opened = .FALSE.
 
    tscale =  itnts ! seconds
    
@@ -327,11 +331,60 @@ SUBROUTINE temp_adj(m1,m2,m3,thp, theta)
    ! print *, "Setting values"
 
    ! print *, "DTLT", dtlt
+   if (itempnudge.eq.1) then
    do i=ia,iz
       do j=ja, jz
          do k=1,m1
-            thp(k, i, j) = thp(k, i, j) - (thp_diff(k)*dtlt/tscale)
+            nudge_vals(k) = (thp_diff(k) * dtlt/tscale)
+            thp(k, i, j) = thp(k, i, j) - nudge_vals(k) !(thp_diff(k)*dtlt/tscale)
          end do
       end do
    end do
+
+   hist_start_time = 0 ! time since start of nudge.dat
+
+   else if (itempnudge.eq.2) then
+!      if(mynum.eq.1) print *, "Time = ", time
+      if(opened.EQV..FALSE.) then
+         open(8, FILE='nudge.dat', status='old', action='read')
+         opened = .TRUE.
+      endif
+
+      ! skip over first i 
+      if(hist_start_time.NE.0) then
+         do i=1,hist_start_time - 1 
+            read(8, *) nudge_vals
+         enddo
+         hist_start_time=0
+      endif
+       read(8, *) nudge_vals
+       if (mynum.eq.1) print *, "Reading nudge vals ", nudge_vals(1:5)
+       do i=ia,iz
+         do j=ja,jz
+           do k=1,m1
+             thp(k,i,j) = thp(k,i,j) - nudge_vals(k) !(tempnudgevals(k)*dtlt/tscale)
+           end do
+         end do
+       end do
+   endif
+
+
+   ! Set to 1 to write temp nudge to file
+   ! note: file must exist before writing,
+   ! and be empty i.e. `touch nudge.dat`
+   write_flag = 0 
+
+   ! if on node 1 (and write_flag is True), write file
+   if (mynum == 1 .and. write_flag == 1) then
+      print *, "Timestep in subroutine is ", ISTP
+      
+      if(opened.EQV..FALSE.) then
+         open(7, FILE='nudge.dat', status='old', action='write', position='append')
+         opened = .TRUE.
+      endif
+      
+      write(7, '(200E15.7)') nudge_vals
+      
+   endif
+
 END SUBROUTINE

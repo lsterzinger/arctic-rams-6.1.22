@@ -38,7 +38,7 @@ character(len=*) :: group,vr,cc
 real :: ff
 integer :: ii,nv
 integer :: inrflg
-integer, parameter ::nvgrid=39,nvstrt=82,nvindat=117,nvsound=10
+integer, parameter ::nvgrid=39,nvstrt=83,nvindat=118,nvsound=10
 integer ::  igrids(nvgrid),istart(nvstrt),iindat(nvindat),isound(nvsound)
 character(len=16) :: grids(nvgrid),start(nvstrt),indat(nvindat),sound(nvsound)
 data igrids/nvgrid*0/,istart/nvstrt*0/,iindat/nvindat*0/,isound/nvsound*0/
@@ -51,7 +51,7 @@ DATA GRIDS/  &
      ,'NNDTRAT','NESTZ','NSTRATZ','POLELAT','POLELON','NINEST','NJNEST'  &
      ,'NKNEST','CENTLAT','CENTLON','NNSTTOP','NNSTBOT'/
 DATA START/  &
-      'INITIAL', 'INORAINTIME','ITEMPNUDGE', 'ITNTS' &
+      'INITIAL', 'INORAINTIME','ITEMPNUDGE', 'TEMPNUDGEVALS', 'ITNTS' &
       ,'NUD_TYPE','VARFPFX','VWAIT1','VWAITTOT'  &
      ,'NUDLAT','TNUDLAT','TNUDCENT','TNUDTOP','ZNUDTOP','WT_NUDGEC'      &
      ,'WT_NUDGE_UV','WT_NUDGE_TH','WT_NUDGE_PI','WT_NUDGE_RT','NUD_COND' &
@@ -73,7 +73,7 @@ DATA INDAT/  &
      ,'NPATCH','NVEGPAT','ISFCL','CO2_INIT','ISOILDAT','ISNOWDAT','NVGCON'&
      ,'PCTLCON','NSLCON','ZROUGH','ALBEDO','SEATMP','DTHCON','DRTCON'     &
      ,'SLZ','SLMSTR','STGOFF','DIVLS','IDIFFK','IHORGRAD','CSX','CSZ','XKHKM'     &
-     ,'ZKHKM','AKMIN','IBUBBLE','IBUBGRD','IBDXIA','IBDXIZ','IBDYJA'      &
+     ,'ZKHKM','AKMIN','IBUBBLE','IBUBBLEALL','IBUBGRD','IBDXIA','IBDXIZ','IBDYJA'      &
      ,'IBDYJZ','IBDZK1','IBDZK2','BTHP','BRTP','ICONV','ICONGR','ICICENT' &
      ,'ICJCENT','CXRAD','CYRAD','ICVERT','ICKMAX','CZRAD','ICKCENT'       &
      ,'CDIVMAX','CTAU','CTMAX','LEVEL','ICHECKMIC','ITRACER','ITRACHIST'  &
@@ -164,8 +164,9 @@ IF(GROUP.EQ.'$MODEL_FILE_INFO') THEN
  CALL varchk (VR,GROUP,START,ISTART,NVSTRT,INRFLG)
  IF(INRFLG.EQ.1) RETURN
  IF(VR.EQ.'INITIAL')     CALL varseti (VR,INITIAL,NV,1,II,1,3)
- IF(VR.EQ.'INORAINTIME')  CALL varseti (VR,INORAINTIME,NV,1,II,0,10000)
- IF(VR.EQ.'ITEMPNUDGE')   CALL varseti (VR,ITEMPNUDGE,NV,1,II,0,1)
+ IF(VR.EQ.'INORAINTIME')  CALL varseti (VR,INORAINTIME,NV,1,II,0,100000)
+ IF(VR.EQ.'ITEMPNUDGE')   CALL varseti (VR,ITEMPNUDGE,NV,1,II,0,2)
+ IF(VR.EQ.'TEMPNUDGEVALS')CALL varsetf (VR,TEMPNUDGEVALS(NV),NV,NZPMAX,FF,-100.,100.)
  IF(VR.EQ.'ITNTS')       CALL varseti  (VR,ITNTS,NV,1,II,0,99999)
  IF(VR.EQ.'NUD_TYPE')    CALL varseti (VR,NUD_TYPE,NV,1,II,0,1)
  IF(VR.EQ.'VARFPFX')     CALL varsetc (VR,VARFPFX,NV,1,CC,1,strl1)
@@ -290,6 +291,7 @@ IF(GROUP.EQ.'$MODEL_OPTIONS') THEN
  IF(VR.EQ.'ZKHKM')        CALL varsetf (VR,ZKHKM(NV),NV,MAXGRDS,FF,0.,100.)
  IF(VR.EQ.'AKMIN')        CALL varsetf (VR,AKMIN(NV),NV,MAXGRDS,FF,0.,5.)
  IF(VR.EQ.'IBUBBLE')      CALL varseti (VR,IBUBBLE,NV,1,II,0,3)
+ IF(VR.EQ.'IBUBBLEALL')   CALL varseti (VR,IBUBBLEALL,NV,1,II,0,1)
  IF(VR.EQ.'IBUBGRD')      CALL varseti (VR,IBUBGRD,NV,1,II,1,10)
  IF(VR.EQ.'IBDXIA')       CALL varseti (VR,IBDXIA,NV,1,II,1,3000)
  IF(VR.EQ.'IBDXIZ')       CALL varseti (VR,IBDXIZ,NV,1,II,1,3000)
@@ -341,7 +343,7 @@ IF(GROUP.EQ.'$MODEL_OPTIONS') THEN
  IF(VR.EQ.'ISALT')        CALL varseti (VR,ISALT,NV,1,II,0,2)
  IF(VR.EQ.'IDUST')        CALL varseti (VR,IDUST,NV,1,II,0,2)
  IF(VR.EQ.'ICCNLEV')      CALL varseti (VR,ICCNLEV,NV,1,II,0,3)
- IF(VR.EQ.'IFORCECCN')    CALL varseti (VR,IFORCECCN,NV,1,II,0,3)
+ IF(VR.EQ.'IFORCECCN')    CALL varseti (VR,IFORCECCN,NV,1,II,0,20)
  IF(VR.EQ.'BLH')          CALL varsetf (VR,BLH,NV,1,FF,0.,1.E4)
  IF(VR.EQ.'FCCNTS')       CALL varsetf (VR,FCCNTS,NV,1,FF,-1.e8,1.E8)
  IF(VR.EQ.'FCCNSTART')    CALL varsetf (VR,FCCNSTART,NV,1,FF,0.,1.E8)
@@ -472,6 +474,7 @@ WRITE(6,'(100(3(A19,I5)/))')         &
  ,'NSLCON=',NSLCON                   &
  ,'IHORGRAD=',IHORGRAD               &
  ,'IBUBBLE=',IBUBBLE                 &
+ ,'IBUBBLEALL=',IBUBBLEALL           &
  ,'IBUBGRD=',IBUBGRD                 &
  ,'IBDXIA=',IBDXIA                   &
  ,'IBDXIZ=',IBDXIZ                   &
@@ -647,6 +650,9 @@ write(6,1301)(gnu(k),k=1,8)
 
 write(6,1401)(jnmb(k),k=1,8)
 1401 format(/,'JNMB=',(t8,8I3))
+
+write(6, 1501)(TEMPNUDGEVALS(k),k=1,NNZP(1))
+1501 format(/,'TEMPNUDGEVALS=',8F9.1,/,(F12.1,7F9.1))
 
 PRINT*, ' '
 WRITE(6,*)'IAERO_CHEM    AERO_EPSILON    AERO_MEDRAD-(default)'

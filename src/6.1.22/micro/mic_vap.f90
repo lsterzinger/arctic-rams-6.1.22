@@ -317,13 +317,14 @@ do k = k1,k2
      cnmhx(k,lcat) = cnmhx(k,lcat) - ccnmass
 
      !For approximation, test rg based on regenerated aerosol
-     acat=8 
-     rg=((0.23873/aero_rhosol(acat)*ccnmass/cxloss)**(0.3333))/aero_rg2rm(acat)
-     if(rg>0.96e-6) then
-       acat=9
-     else
-       acat=8
-     endif
+   !   acat=8 
+   !   rg=((0.23873/aero_rhosol(acat)*ccnmass/cxloss)**(0.3333))/aero_rg2rm(acat)
+   !   if(rg>0.96e-6) then
+   !     acat=9
+   !   else
+   !     acat=8
+   !   endif
+     acat=1
      aeromas(k,acat) = aeromas(k,acat) + ccnmass
      aerocon(k,acat) = aerocon(k,acat) + cxloss
 

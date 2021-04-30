@@ -712,7 +712,7 @@ elseif (jnmb(lcat) >= 5) then
       !artificial number concentration even when mass is in bounds. This is
       !generally small but could accumulate over time. Added the IF statement
       !to stop adjustment if mean size is in bounds.
-     if (lcat > 0) then
+     if (lcat > 1) then
       if( (embtemp > 0.0 .and. (embtemp < 0.999*emb0(lcat)   .or.  &
                                 embtemp > 1.001*emb1(lcat))) .or.  &
           (rx(k,lcat) == 0.0 .and. cx(k,lcat) > 0.0 )        .or.  &

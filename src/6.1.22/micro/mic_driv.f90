@@ -255,8 +255,8 @@ if (time.le.inoraintime) then
 else
    ! print*, "Rain and drizzle on"
 
-   jnmb(2) = 5
-   jnmb(8) = 5
+   jnmb(2) = irain
+   jnmb(8) = idriz
 endif
 
 !Adele - If doing restart from CCNLEV=0, deplete particles

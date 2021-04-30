@@ -129,7 +129,7 @@ real, dimension(nzpmax) :: xinuchomrt,xinuccontrt,xinucifnrt,xinuchazrt   &
 real, dimension(nzpmax) :: xdust1cldrt,xdust2cldrt,xdust1drzrt,xdust2drzrt
 
 !******Variables Needed for BUBBLE SIMULATION ******************************
-integer :: ibubble,ibubgrd,ibdxia,ibdxiz,ibdyja,ibdyjz,ibdzk1,ibdzk2
+integer :: ibubble,ibubbleall,ibubgrd,ibdxia,ibdxiz,ibdyja,ibdyjz,ibdzk1,ibdzk2
 real :: bthp,brtp
 
 !******Variables Needed for CONVERGENCE FORCING ****************************
@@ -204,8 +204,8 @@ real, parameter :: mincon=1.e-1         &
 !tables with parcel model runs using a new sigma. The median radii bins
 !in nucleation and pre_nucleation routines (rg, rmsma, rmlar) are also
 !specifically set for sigma=1.8. These would need to be updated as well.
-data aero_sigma  / 1.80 &       !CCN 
-                  ,1.80 &       !GCCN 
+data aero_sigma  / 1.50 &       !CCN 
+                  ,1.50 &       !GCCN 
                   ,1.80 &       !small mineral dust
                   ,1.80 &       !large mineral dust
                   ,1.80 &       !salt film mode 
@@ -216,8 +216,8 @@ data aero_sigma  / 1.80 &       !CCN
 !Set the relationship between median radius and mean mass radius 
 !based on aerosol distribution spectral width
 !exp(1.5 * (alog(sigma))**2)
-data aero_rg2rm  / 1.6791 &     !CCN 
-                  ,1.6791 &     !GCCN 
+data aero_rg2rm  / 1.2797 &     !CCN 
+                  ,1.2797 &     !GCCN 
                   ,1.6791 &     !small mineral dust
                   ,1.6791 &     !large mineral dust
                   ,1.6791 &     !salt film mode 
@@ -247,6 +247,9 @@ integer :: inoraintime
 
 ! Lucas Sterzinger - turn on/off temp nudge
 integer :: itempnudge
+
+! Lucas Sterzinger - temp nudge static values
+real, dimension(nzpmax) :: tempnudgevals
 
 !Band Data by Habit
                !Small     !Medium   !Large

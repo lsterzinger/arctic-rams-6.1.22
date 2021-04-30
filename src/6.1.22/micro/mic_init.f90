@@ -379,6 +379,7 @@ implicit none
 integer :: k,m1,k1,k2
 real :: ccn_maxt,time
 real, dimension(m1) :: rv
+real :: expected_val
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!! Make sure that the profile here is consistent with the init_ccn profile
@@ -402,17 +403,78 @@ do k = 1,m1
   !1) decrease bl and zt(k)<blh or 
   !2) decrease ft and zt(k)>blh
   !3) decrease everywhere or
-  if (fccnts .gt. 0 .and. (iforceccn.eq.3 .or. &
-      (iforceccn.eq.1 .and. (zt(k).lt.blh .or. zt(k).le.zt(k1))) .or. &
-      (iforceccn.eq.2 .and. (zt(k).ge.blh .or. zt(k).ge.zt(k2))))) then
-     aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
-  else !Force the aerosol conc to be the same as at start
-     aerocon(k,1)=ccn_maxt 
-  endif
+  !4) Hold reset everywhere
+  select case (iforceccn)
+  case(1) !decrease if below BLH/k1, reset elsewhere
+    if(zt(k).lt.blh .and. zt(k).le.zt(k1)) then
+      aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+    else
+      aerocon(k,1)=ccn_maxt 
+    endif
+  
+  case(2) !decrease if above BLH/k2, reset in bottom layer (k=2 is bottom layer of atmosphere)
+    if ((zt(k).ge.blh .or. zt(k).ge.zt(k2)).and.(k2.ne.0))  aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+    
+    if (k.le.2) aerocon(k,1)=ccn_maxt
+  
+  case(3) !decrease everywhere
+    aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+
+  case(4) !hold constant above BLH/k2, and k<=2
+    if (zt(k).ge.blh .or. zt(k).ge.zt(k2) .or. k.le.2) then
+      aerocon(k,1)=ccn_maxt
+    endif
+    
+  case(5) !decrease bottom BL layer, reset FT
+    if(k.le.2) then
+      aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+    else if ((zt(k).ge.blh .or. zt(k).ge.zt(k2)).and.(k2.ne.0)) then
+      aerocon(k,1)=ccn_maxt
+    endif
+
+  case(6) !decrease FT BL1LEV
+    if(k.le.2) then
+      aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+    else if ((zt(k).ge.blh) .or. ((zt(k).ge.zt(k2)).and.(k2.ne.0))) then
+      aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+    endif
+
+  case(7) !decrease directly to 0
+      aerocon(k,1)=0 
+
+  case(8) ! decrease everywhere if > expected value
+   expected_val = ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+   if (aerocon(k,1) > expected_val) then
+      aerocon(k,1) = expected_val
+   endif 
+  end select
+
+
+  ! case(5) !decrease bottom BL layer, reset FT
+  !   if(k.le.2) then
+  !     aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+  !   elseif (zt(k).ge.blh .or. zt(k).ge.zt(k2).and.(k2.ne.0)) then
+  !     aerocon(k,1)=ccn_maxt
+  !   endif
+  ! end select
+
+  ! if (fccnts .gt. 0 .and. (iforceccn.eq.3 .or. &
+  !     (iforceccn.eq.1 .and. (zt(k).lt.blh .or. zt(k).le.zt(k1))) .or. &
+  !     (iforceccn.eq.2 .and. (zt(k).ge.blh .or. zt(k).ge.zt(k2))))) then
+  !    aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+     
+  ! ! If resetting in BL (IFORCECCN=2), only reset in bottom 10 layers of BL.
+  ! else if (((iforceccn.eq.2).and.(k.le.2)).or.(iforceccn.ne.2)) then!Force the aerosol conc to be the same as at start
+  !  ! else !Force the aerosol conc to be the same as at start
+  !    aerocon(k,1)=ccn_maxt 
+  ! endif
 
    !Set up Field of CCN mass mixing ratio (kg/kg)
    aeromas(k,1) = ((aero_medrad(1)*aero_rg2rm(1))**3.) &
                 *aerocon(k,1)/(0.23873/aero_rhosol(1))
+
+ else if (iforceccn == 7) then
+   aerocon(k,1)=0
  endif
 enddo
 
