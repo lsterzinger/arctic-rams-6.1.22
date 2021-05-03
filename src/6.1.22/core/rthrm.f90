@@ -243,7 +243,7 @@ enddo
 return
 END SUBROUTINE wetthrm3
 
-SUBROUTINE temp_adj(m1,m2,m3,thp, theta)
+SUBROUTINE temp_adj(m1,m2,m3,thp)
    use ref_sounding
    use mem_grid
    use node_mod
@@ -254,7 +254,7 @@ SUBROUTINE temp_adj(m1,m2,m3,thp, theta)
    ! Lucas - variables to do calculation
    integer :: i, j, k, m1, m2, m3
    real :: tscale, count
-   real, dimension(m1,iz,jz) :: thp, theta
+   real, dimension(m1,iz,jz) :: thp 
    real, dimension(m1) :: thp_diff, tht, nudge_vals
    real, dimension(nmachs, m1+1) :: mparr, mparr2
    
@@ -279,7 +279,7 @@ SUBROUTINE temp_adj(m1,m2,m3,thp, theta)
    do i=ia,iz
       do j=ja,jz
          do k=1,m1
-            tht(k) = tht(k) + theta(k, i, j)
+            tht(k) = tht(k) + thp(k, i, j)
          end do
          count = count + 1.0
       end do

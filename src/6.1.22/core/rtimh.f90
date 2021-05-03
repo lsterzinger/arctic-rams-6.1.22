@@ -56,8 +56,7 @@ integer :: callmassflux,massfluxfreq
 if ((itempnudge.ne.0) .and. (time < fccnstart) .and. (iforceccn.ne.0)) then
    ! print *, "Nudging temperature to initial sounding"
    CALL temp_adj(mzp,mxp,myp,&
-      basic_g(ngrid)%thp(1,1,1),&
-      basic_g(ngrid)%theta(1,1,1))
+      basic_g(ngrid)%thp(1,1,1))
  endif
 
 !  Thermodynamic diagnosis   
