@@ -53,7 +53,10 @@ integer :: callmassflux,massfluxfreq
 !    basic_g(ngrid)%thp(1,1,1),&
 !    basic_g(ngrid)%theta(1,1,1))
 
-if ((itempnudge.ne.0) .and. (time < fccnstart)) then
+
+! If temp nudging is on, and not aerosol forcing (ifoceccn=0) OR
+! if temp nudging is on, and aerosol forcing but not yet FCCNSTART
+if ((itempnudge.ne.0) .and. ((time < fccnstart) .or. (iforceccn.eq.0))) then
    ! print *, "Nudging temperature to initial sounding"
    CALL temp_adj(mzp,mxp,myp,&
       basic_g(ngrid)%thp(1,1,1))
