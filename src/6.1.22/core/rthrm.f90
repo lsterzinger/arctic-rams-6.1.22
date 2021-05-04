@@ -255,7 +255,7 @@ SUBROUTINE temp_adj(m1,m2,m3,thp)
    integer :: i, j, k, m1, m2, m3
    real :: tscale, count
    real, dimension(m1,iz,jz) :: thp 
-   real, dimension(m1) :: thp_diff, tht, nudge_vals
+   real, dimension(m1) :: thp_diff, tht_local, nudge_vals
    real, dimension(nmachs, m1+1) :: mparr, mparr2
    
    !Lucas - variables to do MPI stuff
@@ -272,31 +272,38 @@ SUBROUTINE temp_adj(m1,m2,m3,thp)
 
    tscale =  itnts ! seconds
    
-   ! print *, "Doing temperature adjusting"
-   ! get average
-   tht = 0
+   ! Get the average profile on this node
+   ! Since different nodes might have different 
+   ! number of grid points, get a column of "total"
+   ! thp values and a count of # of columns.
+   ! This will be used to compute the mean after 
+   ! all nodes have shared this information.
+   tht_local = 0
    count = 0
    do i=ia,iz
       do j=ja,jz
          do k=1,m1
-            tht(k) = tht(k) + thp(k, i, j)
+            tht_local(k) = tht_local(k) + thp(k, i, j)
          end do
          count = count + 1.0
       end do
    end do
    
-   ! MPI routines will go here
    ! Share informations between nodes, 
    ! do not divide until all nodes have 
    ! the same information
-   
-   mparr(mynum, 1:m1) = tht
+
+   ! Create array to share via MPI, 
+   ! with length k+1 (k grids in column 
+   ! +1 for the count)
+   mparr(mynum, 1:m1) = tht_local
    mparr(mynum, m1+1) = count
 
    nwords = nmachs*sizeof(mparr)
    nwords_1d = sizeof(mparr(1, :))
    allocate(buff(nwords))
    
+   ! I forgot how this works
    do im = 1, nmachs
       if (im.eq.mynum) then
          CALL par_init_put(buff, nwords)
@@ -314,20 +321,20 @@ SUBROUTINE temp_adj(m1,m2,m3,thp)
    enddo
    deallocate(buff)
 
-   tht = 0
+   tht_local = 0
    count = 0
    ! Decompose mpi values
    do im=1, nmachs
       if(im.ne.mynum) then
-         tht = tht + mparr(im, 1:m1)
+         tht_local = tht_local + mparr(im, 1:m1)
          count = count + mparr(im, m1+1)
       endif
    enddo
    ! Do the actual mean
 
-   tht = tht/count
-   ! print *, "Average profile", tht(1:10)
-   thp_diff = tht - th01dn(:m1,1)
+   tht_local = tht_local/count
+   print *, "Average profile", tht_local(1:10)
+   thp_diff = tht_local - th01dn(:m1,1)
    ! print *, "Setting values"
 
    ! print *, "DTLT", dtlt
