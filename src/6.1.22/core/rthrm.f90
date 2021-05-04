@@ -333,7 +333,7 @@ SUBROUTINE temp_adj(m1,m2,m3,thp)
    ! Do the actual mean
 
    tht_local = tht_local/count
-   print *, "Average profile", tht_local(1:10)
+   ! print *, "Average profile", tht_local(1:10)
    thp_diff = tht_local - th01dn(:m1,1)
    ! print *, "Setting values"
 
