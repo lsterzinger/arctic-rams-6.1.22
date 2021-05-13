@@ -272,69 +272,9 @@ SUBROUTINE temp_adj(m1,m2,m3,thp)
 
    tscale =  itnts ! seconds
    
-   ! Get the average profile on this node
-   ! Since different nodes might have different 
-   ! number of grid points, get a column of "total"
-   ! thp values and a count of # of columns.
-   ! This will be used to compute the mean after 
-   ! all nodes have shared this information.
-   tht_local = 0
-   count = 0
-   do i=ia,iz
-      do j=ja,jz
-         do k=1,m1
-            tht_local(k) = tht_local(k) + thp(k, i, j)
-         end do
-         count = count + 1.0
-      end do
-   end do
-   
-   ! Share informations between nodes, 
-   ! do not divide until all nodes have 
-   ! the same information
+   call mpi_mean(m1, m2, m3, thp, tht_local)
 
-   ! Create array to share via MPI, 
-   ! with length k+1 (k grids in column 
-   ! +1 for the count)
-   mparr(mynum, 1:m1) = tht_local
-   mparr(mynum, m1+1) = count
-
-   nwords = nmachs*sizeof(mparr)
-   nwords_1d = sizeof(mparr(1, :))
-   allocate(buff(nwords))
-   
-   ! I forgot how this works
-   do im = 1, nmachs
-      if (im.eq.mynum) then
-         CALL par_init_put(buff, nwords)
-         CALL par_put_float(mparr(mynum, :), (m1+1))
-         do im2=1, nmachs
-            if(mynum.ne.im2) then
-               CALL par_send(im2, 10)
-               ! print *, "Sending from ", mynum, " to ", im2
-            endif
-         enddo
-      else
-         CALL par_get_new(buff, nwords, 10, ibytes, imsgtype, ihostnum)
-         CALL par_get_float(mparr(im, :), (m1+1))
-      endif
-   enddo
-   deallocate(buff)
-
-   tht_local = 0
-   count = 0
-   ! Decompose mpi values
-   do im=1, nmachs
-      if(im.ne.mynum) then
-         tht_local = tht_local + mparr(im, 1:m1)
-         count = count + mparr(im, m1+1)
-      endif
-   enddo
-   ! Do the actual mean
-
-   tht_local = tht_local/count
-   ! print *, "Average profile", tht_local(1:10)
-   thp_diff = tht_local - th01dn(:m1,1)
+   thp_diff = tht_local - thpinit
    ! print *, "Setting values"
 
    ! print *, "DTLT", dtlt
@@ -379,7 +319,7 @@ SUBROUTINE temp_adj(m1,m2,m3,thp)
    ! Set to 1 to write temp nudge to file
    ! note: file must exist before writing,
    ! and be empty i.e. `touch nudge.dat`
-   write_flag = 0 
+   write_flag = 0
 
    ! if on node 1 (and write_flag is True), write file
    if (mynum == 1 .and. write_flag == 1) then
@@ -395,3 +335,107 @@ SUBROUTINE temp_adj(m1,m2,m3,thp)
    endif
 
 END SUBROUTINE
+
+
+! Subroutine to get the initial THP profile from the sounding
+! At t=1, this routine is called from rtimh.f90 and sets the 
+! variable thpinit, which is then used to calculated nudging
+! values in subroutine temp_adj()
+subroutine initial_temp_profile(m1, m2, m3, thp)
+   use ref_sounding
+   use mem_grid
+   use node_mod
+   use rconstants
+   use micphys
+   implicit none
+
+   integer :: i, j, k, m1, m2, m3
+   real, dimension(m1, iz, jz) :: thp
+   real, dimension(m1) :: tht_local
+   real :: count
+
+   call mpi_mean(m1, m2, m3, thp, tht_local)
+
+   thpinit = tht_local
+end subroutine
+
+
+! Get the average profile on this node
+! Since different nodes might have different 
+! number of grid points, get a column of "total"
+! values and a count of # of columns.
+! This will be used to compute the mean after 
+! all nodes have shared this information.
+subroutine mpi_mean(m1, m2, m3, var3d, var1d)
+   use node_mod
+   use mem_grid
+   implicit none
+
+   integer :: m1, m2, m3, i, j, k
+   real :: dimension(m3, iz, jz)
+
+   real, dimension(m1, iz, jz) :: var3d
+   real, dimension(m1) :: var1d
+   real :: count
+
+   !Lucas - variables to do MPI stuff
+   real, allocatable :: buff(:)
+   integer :: nwords, nwords_1d, im, im2, ibytes, imsgtype, ihostnum
+   real, dimension(nmachs, m1+1) :: mparr, mparr2
+
+   ! Calculate the local total column value, 
+   ! and the number of columns
+   var1d = 0
+   count = 0
+   do i=ia,iz
+      do j=ja,jz
+         do k=1,m1
+            var1d(k) = var1d(k) + var3d(k, i, j)
+         end do
+         count = count + 1.0
+      end do
+   end do
+
+   ! create array to pass between nodes w/ MPI
+   ! the first 1-m1 is the sum of columns,
+   ! and m1 + 1 is used to store the number of columns
+   mparr(mynum, 1:m1) = var1d
+   mparr(mynum, m1+1) = count
+
+   nwords = nmachs*sizeof(mparr)
+   nwords_1d = sizeof(mparr(1, :))
+
+
+   allocate(buff(nwords))
+
+   ! Make sure that all nodes have the same info
+   do im = 1, nmachs
+      if (im.eq.mynum) then
+         CALL par_init_put(buff, nwords)
+         CALL par_put_float(mparr(mynum, :), (m1+1))
+         do im2=1, nmachs
+            if(mynum.ne.im2) then
+               CALL par_send(im2, 10)
+            endif
+         enddo
+      else
+         CALL par_get_new(buff, nwords, 10, ibytes, imsgtype, ihostnum)
+         CALL par_get_float(mparr(im, :), (m1+1))
+      endif
+   enddo
+   deallocate(buff)
+
+   
+   var1d = 0
+   count = 0
+   ! Decompose mpi values
+   do im=1, nmachs
+      if(im.ne.mynum) then
+         var1d = mparr(im, 1:m1)
+         count = mparr(im, m1+1)
+      endif
+   enddo
+
+   ! Compute the actual mean
+   var1d = var1d / count
+end subroutine

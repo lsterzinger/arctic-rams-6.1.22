@@ -251,6 +251,9 @@ integer :: itempnudge
 ! Lucas Sterzinger - temp nudge static values
 real, dimension(nzpmax) :: tempnudgevals
 
+! Lucas Sterzinger - initial-thetap
+real, dimension(nzpmax) :: thpinit
+
 !Band Data by Habit
                !Small     !Medium   !Large
 data bcfvt /   1.26E7,    1.26E7,   234101.5, & ! 1 cloud 

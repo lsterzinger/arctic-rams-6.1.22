@@ -58,9 +58,14 @@ integer :: callmassflux,massfluxfreq
 ! if temp nudging is on, and aerosol forcing but not yet FCCNSTART
 if ((itempnudge.ne.0) .and. ((time < fccnstart) .or. (iforceccn.eq.0))) then
    ! print *, "Nudging temperature to initial sounding"
-   CALL temp_adj(mzp,mxp,myp,&
-      basic_g(ngrid)%thp(1,1,1))
- endif
+   
+   if (time.eq.1) then
+      call initial_temp_profile(mzp, mxp, myp, basic_g(ngrid)%thp(1,1,1))
+   endif
+   
+   CALL temp_adj(mzp,mxp,myp, basic_g(ngrid)%thp(1,1,1))
+
+endif
 
 !  Thermodynamic diagnosis   
 !--------------------------------
