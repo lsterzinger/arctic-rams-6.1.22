@@ -3,3 +3,4 @@ test/
 misc/
 **/*.h5
 include.mk
+bin.rams/rams-*
