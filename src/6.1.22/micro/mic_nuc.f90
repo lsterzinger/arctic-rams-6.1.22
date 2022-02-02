@@ -249,8 +249,9 @@ elseif (jnmb(1) >= 5) then
      ctc = 0
      if((acat==1)                  .or. &  ! CCN
         (acat==2)                  .or. &  ! GCCN
-        (acat==3 .and. idust>0)    .or. &  ! Small dust mode
-        (acat==4 .and. idust>0)    .or. &  ! Large dust mode
+      ! Lucas - Turned off cloud nucleation from Dust (01.31.2022)
+      !   (acat==3 .and. idust>0)    .or. &  ! Small dust mode
+      !   (acat==4 .and. idust>0)    .or. &  ! Large dust mode
         (acat==5 .and. isalt>0)    .or. &  ! Salt film mode
         (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
         (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
