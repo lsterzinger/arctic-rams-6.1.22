@@ -561,13 +561,17 @@ do j = 1,n3
    !If not using dust source model
    if(idust == 1) then
      !Set up concentration of SMALL MODE Mineral Dust (#/kg)
-     if(k<=2) md1np(k,i,j)=dust1_maxt
-     if(k>2)  md1np(k,i,j)=dust1_maxt*exp(-zt(k)/7000.)
-     !Set up concentration of LARGE MODE Mineral Dust (#/kg)
-     if(k<=2) md2np(k,i,j)=dust2_maxt
-     if(k>2)  md2np(k,i,j)=dust2_maxt*exp(-zt(k)/7000.)
+   !   if(k<=2) md1np(k,i,j)=dust1_maxt
+   !   if(k>2)  md1np(k,i,j)=dust1_maxt*exp(-zt(k)/7000.)
+   !   !Set up concentration of LARGE MODE Mineral Dust (#/kg)
+   !   if(k<=2) md2np(k,i,j)=dust2_maxt
+   !   if(k>2)  md2np(k,i,j)=dust2_maxt*exp(-zt(k)/7000.)
+      md1np(k,i,j)=dust1_maxt
+      md2np(k,i,j)=dust1_maxt
 
-     !Set up Field of SMALL MODE DUST mass (kg/kg)
+
+
+      !Set up Field of SMALL MODE DUST mass (kg/kg)
      md1mp(k,i,j) = ((aero_medrad(3)*aero_rg2rm(3))**3.) &
                     *md1np(k,i,j)/(0.23873/aero_rhosol(3))
      !Set up Field of LARGE MODE DUST mass (kg/kg)
