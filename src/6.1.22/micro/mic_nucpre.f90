@@ -32,12 +32,12 @@ do acat=1,aerocat
       
   if((acat==1)                  .or. &  ! CCN
      (acat==2)                  .or. &  ! GCCN
-     (acat==3 .and. idust>0)    .or. &  ! Small dust mode
-     (acat==4 .and. idust>0)    .or. &  ! Large dust mode
+    !  (acat==3 .and. idust>0)    .or. &  ! Small dust mode
+    !  (acat==4 .and. idust>0)    .or. &  ! Large dust mode
      (acat==5 .and. isalt>0)    .or. &  ! Salt film mode
      (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
      (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
-     (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
+    !  (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
      (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
 
      !Assign aerosol specs to local arrays
@@ -97,12 +97,12 @@ real, dimension(m1) :: dn0,rv
    totifnn(k,acat) = 0.0
    totifnm(k,acat) = 0.0
 
-   if((acat==1)                  .or. &  ! CCN
-      (acat==2)                  .or. &  ! GCCN
-      (acat==3 .and. idust>0)    .or. &  ! Small dust mode
+  !  if((acat==1)                  .or. &  ! CCN
+      ! (acat==2)                  .or. &  ! GCCN
+      if((acat==3 .and. idust>0)    .or. &  ! Small dust mode
       (acat==4 .and. idust>0)    .or. &  ! Large dust mode
-      (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
-      (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
+      (acat==8 .and. iccnlev>=2)) then  ! Small regenerated aerosol
+      ! (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
 
     concen_nuc = aerocon(k,acat)
     aeromass   = aeromas(k,acat)
