@@ -324,7 +324,13 @@ do k = k1,k2
    !   else
    !     acat=8
    !   endif
-     acat=1
+
+     ! if not a liquid hydrometeor, release aerosol to acat 8
+     if (lcat.ne.1 .and. lcat.ne.2 .and. lcat.ne.8) then
+      acat = 8
+     else
+      acat=9
+     endif
      aeromas(k,acat) = aeromas(k,acat) + ccnmass
      aerocon(k,acat) = aerocon(k,acat) + cxloss
 
