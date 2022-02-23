@@ -193,11 +193,11 @@ integer, dimension(aerocat) :: iaero_chem,aero_vanthoff
 
 !Minimum aerosol concentration (#/kg) and mass (kg/kg) 
 !values for condition statements involving aerosols
-real, parameter :: mincon=1.e-1         &  
-                  ,minmas=1.e-21        &
+real, parameter :: mincon=0.         &  
+                  ,minmas=0.        &
                   ,maxaero=20000.e6     &
                   ,minmashydro=1.e-27   &
-                  ,minifn=1.e-14
+                  ,minifn=0.
 
 !Aerosol distribution spectral width (sigma)
 !Note: do not change this unless you update cloud nucleation lookup
