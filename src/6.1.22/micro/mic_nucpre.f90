@@ -44,22 +44,22 @@ do acat=1,aerocat
      aeromass   = aeromas(k,acat)
 
      !Keep median radius and aerosol mass in bounds
-     if(aerocon(k,acat) > mincon .and. aeromas(k,acat) > minmas) then
+    !  if(aerocon(k,acat) > mincon .and. aeromas(k,acat) > minmas) then
 
-       rhosol=aero_rhosol(acat)
-       aero_rg(acat)=((0.23873/rhosol*aeromas(k,acat)/aerocon(k,acat)) &
-                    **(1./3.))/aero_rg2rm(acat)
+    !    rhosol=aero_rhosol(acat)
+    !    aero_rg(acat)=((0.23873/rhosol*aeromas(k,acat)/aerocon(k,acat)) &
+    !                 **(1./3.))/aero_rg2rm(acat)
 
-       if(aero_rg(acat) < 0.01e-6) aero_rg(acat) = 0.01e-6
-       if(aero_rg(acat) > 6.50e-6) aero_rg(acat) = 6.50e-6
+    !   !  if(aero_rg(acat) < 0.01e-6) aero_rg(acat) = 0.01e-6
+    !   !  if(aero_rg(acat) > 6.50e-6) aero_rg(acat) = 6.50e-6
 
-       aeromas(k,acat) = ((aero_rg(acat)*aero_rg2rm(acat))**3.) &
-                       *aerocon(k,acat)/(0.23873/rhosol)
+    !   !  aeromas(k,acat) = ((aero_rg(acat)*aero_rg2rm(acat))**3.) &
+    !   !                  *aerocon(k,acat)/(0.23873/rhosol)
 
-       if(iccnlev>=2 .and. itrkepsilon==1 .and. (acat==8.or.acat==9)) &
-         regenmas(k,acat-7) = regenmas(k,acat-7) * (aeromas(k,acat) / aeromass)
+    !    if(iccnlev>=2 .and. itrkepsilon==1 .and. (acat==8.or.acat==9)) &
+    !      regenmas(k,acat-7) = regenmas(k,acat-7) * (aeromas(k,acat) / aeromass)
 
-     endif
+    !  endif
 
   endif
 
