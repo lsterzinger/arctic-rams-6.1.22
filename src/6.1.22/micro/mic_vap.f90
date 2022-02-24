@@ -338,9 +338,6 @@ do k = k1,k2
      aeromas(k,acat) = aeromas(k,acat) + ccnmass
      aerocon(k,acat) = aerocon(k,acat) + cxloss
 
-     if (acat==9) then
-      print *, "aeromas", aeromas(k, acat), "aerocon", aerocon(k,acat)
-     endif
      if(itrkepsilon==1)then
       scnmass = snmhx(k,lcat) * rxferratio
       snmhx(k,lcat) = snmhx(k,lcat) - scnmass
