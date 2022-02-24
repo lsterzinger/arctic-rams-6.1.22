@@ -333,12 +333,7 @@ do k = k1,k2
      if (lcat.eq.1 .or. lcat.eq.2 .or.  lcat.eq.8) then
       acat = 8
      else
-      print *, "**********************"
-      print *, "* Evaporation of Ice *"
-      print *, "**********************"
       acat=9
-      ! cnmhx and dinhx are identical when print
-      print *, "cnmhx:", cnmhx(k, lcat), " dinhx:", dinhx(k,lcat), " acat:", acat
      endif
      aeromas(k,acat) = aeromas(k,acat) + ccnmass
      aerocon(k,acat) = aerocon(k,acat) + cxloss
