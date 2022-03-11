@@ -14,7 +14,26 @@
 ! code; if not, write to the Free Software Foundation, Inc., 
 ! 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 !======================================================================================
+subroutine printmic(aero_sums, time)
+   use micphys, only: iprintaero
 
+   real, dimension(10), intent(in) :: aero_sums
+   real :: time
+   if (iprintaero==1) then
+   write(67, *) int(time), "INIT", aero_sums(1)
+   write(67, *) int(time), "THRMSTR", aero_sums(2)
+   write(67, *) int(time), "VAPFLUX", aero_sums(3)
+   write(67, *) int(time), "NEWTEMP", aero_sums(4)
+   write(67, *) int(time), "SELFCOLLIQ", aero_sums(5)
+   write(67, *) int(time), "SELFCOLICE", aero_sums(6)
+   write(67, *) int(time), "COLXFERS", aero_sums(7)
+   write(67, *) int(time), "CLDNUC", aero_sums(8)
+   write(67, *) int(time), "SEDIM", aero_sums(9)
+   write(67, *) int(time), "DEPOSITION", aero_sums(10)
+   ! write(67,*) int(time), string, a1
+   endif
+end subroutine
+ 
 Subroutine micro ()
 
 use mem_basic
@@ -29,6 +48,8 @@ use io_params
 
 implicit none
 
+real :: aero_diff
+
 integer :: nembfall,ndensrtgt,maxkfall,ngr,lhcat,i,j,k
 integer, dimension(11)  :: k1,k2,k3
 integer, save :: ncall = 0
@@ -37,7 +58,7 @@ integer, save, dimension(16)  :: lcat0
 real :: dtlti,sumtotal,sumcheck
 data ncall2g/16*0/
 data lcat0 /1,2,3,4,5,6,7,3,3,3,3,4,4,4,4,8/
-
+real, dimension(10) :: aero_sums
 type pcp_tab_type
   real, allocatable, dimension(:,:,:,:,:,:) :: pcpfillc,pcpfillr
   real, allocatable, dimension(:,:,:,:,:)   :: sfcpcp
@@ -113,6 +134,7 @@ CALL each_call (mzp,dtlt)
 dtlti = 1. / dtlt
 ngr = ngrid
 
+aero_sums = (/0.,0.,0.,0.,0.,0.,0.,0.,0.,0./)
 do j = ja,jz
    do i = ia,iz
 
@@ -140,10 +162,10 @@ do j = ja,jz
          ,leaf_g(ngr)%soil_rough(i,j,1:npatch) &
          ,basic_g(ngr)%up(1,i,j)               &
          ,basic_g(ngr)%vp(1,i,j)               &
-         ,imonth1,npatch)
-
+         ,imonth1,npatch, aero_diff,aero_sums)
       CALL copyback (mzp,k2,k3,i,j,micro_g(ngr))
 
+      ! if(i==5.and.j==5) write (66, *) int(time), aero_diff
       !Quick way to view total accum precip
       !Good for testing in sequential mode
       sumcheck=0
@@ -160,6 +182,7 @@ do j = ja,jz
       endif
    enddo
 enddo
+call printmic(aero_sums, time)
 
 return
 END SUBROUTINE micro
@@ -175,7 +198,7 @@ Subroutine mcphys (m1,k1,k2,k3,i,j,ngr,maxnzp  &
    !Saleeby(2011-04-20)
    !Variables needed for aerosol deposition
    ,ustar,lclass,parea,vrough,srough,uup,vvp &
-   ,imonthx,npatch)
+   ,imonthx,npatch, aero_diff, aero_sums)
 
 use mem_radiate
 use rconstants
@@ -208,6 +231,7 @@ real, dimension(m1)        :: zm,thp,theta,pp,rtp,rv,wp,dn0,pi0
 ! Variables needed for Harrington radiation scheme
 real                       :: glat,topt
 real, dimension(m1)        :: zt
+real, dimension(10),intent(inout) :: aero_sums
 
 ! Variables needed for hydrometeor sedimentation
 real, dimension(m1,maxkfall,nembfall,nhcat,ndensrtgt,nband) :: pcpfillc,pcpfillr
@@ -219,6 +243,9 @@ real, dimension(m1,nembfall,nhcat,ndensrtgt,nband) :: allpcp
 integer :: npatch,imonthx
 real, dimension(npatch) :: lclass,ustar,parea,vrough,srough
 real, dimension(m1) :: uup,vvp
+
+real :: init_aeromas, tempaeromas
+real, intent(out) :: aero_diff
 
 logical, external :: isnanr
 ! (mcats) is for rain, agg, graupel, hail self-collection (cols)
@@ -258,14 +285,23 @@ else
    jnmb(2) = irain
    jnmb(8) = idriz
 endif
-
+! call printmic("INIT")
+aero_sums(1) = aero_sums(1) + sum((aeromas(:, 5) + aeromas(:, 8) + cnmhx(:, 1)) * dn0)  
 !Adele - If doing restart from CCNLEV=0, deplete particles
 if (time .eq. fccnstart .and. iccnlev == 2) then
  CALL remove_aero_init(dn0(1),m1,i,j)
 endif
 
+! if(i==5.and.j==5) then
+!    k = 176
+!    init_aeromas = aeromas(k, 5) + aeromas(k, 8) + cnmhx(k, 1)
+!    print *, "Init: ", init_aeromas
+! endif
+
 ! Compute pressure, temperature, and moisture for vapor diffusion
  CALL thrmstr (m1,k1,k2,pp(1),thp(1),theta(1),pi0(1),rtp(1),rv(1))
+! call printmic("THRMSTR")
+aero_sums(2) = aero_sums(2) + sum((aeromas(:, 5) + aeromas(:, 8) + cnmhx(:, 1)) * dn0)  
 
 ! Compute vapor diffusion terms
  CALL each_column (m1,k1,k2,rv(1),dn0(1))
@@ -310,16 +346,26 @@ enddo
 
 ! Pre-compute variables for vapor diffusion
  CALL vapdiff (m1,k1(11),k2(11),rv(1))
-
-!***********************************************************************
-! Calculate vapor flux in order of species given by (mivap)
-do icv = 1,8
+ !***********************************************************************
+ ! Calculate vapor flux in order of species given by (mivap)
+ do icv = 1,8
    lcat = mivap(icv)
    if (jnmb(lcat) .ge. 1) then
       CALL vapflux (m1,lcat,k1(lcat),k2(lcat),rv(1))
    endif
 enddo
 !**********************************************************************
+! call printmic("VAPFLUX")
+aero_sums(3) = aero_sums(3) + sum((aeromas(:, 5) + aeromas(:, 8) + cnmhx(:, 1)) * dn0)  
+
+
+! if(i==5.and.j==5) then
+!    k = 176
+!    tempaeromas = aeromas(k, 5) + aeromas(k, 8) + cnmhx(k, 1)
+!    aero_diff = tempaeromas - init_aeromas
+!    print *, "VapFlux: ", tempaeromas, "Diff: ", aero_diff
+! endif
+
 
 ! Pristine ice to snow transfer
 if (jnmb(4) .ge. 1) then
@@ -336,7 +382,9 @@ enddo
 
 ! Update temperature and moisture following vapor growth
  CALL newtemp (m1,k1(11),k2(11),rv(1),theta(1))
-
+! call printmic('NEWTEMP')
+aero_sums(4) =aero_sums(4) + sum((aeromas(:, 5) + aeromas(:, 8) + cnmhx(:, 1)) * dn0)  
+ 
 ! Add call to update LHR theta' after vapor diffusion
  CALL calc_lhr_vap (k1,k2)
 
@@ -371,6 +419,8 @@ do lcat = 2,7
    endif
 29 continue
 enddo
+! call printmic("SELFCOLLIQ")
+aero_sums(5) = aero_sums(5) + sum((aeromas(:, 5) + aeromas(:, 8) + cnmhx(:, 1)) * dn0)  
 
 ! Self collection of pristine ice, snow (transfers to aggregates)
 do lcat = 3,4
@@ -379,11 +429,13 @@ do lcat = 3,4
       CALL col3344 (lcat,5,mc1,k1(lcat),k2(lcat))
    endif
 enddo
-
 ! Collection between pristine ice and snow
 if (jnmb(5) .ge. 1) then
-    CALL col3443 (3,4,5,max(k1(3),k1(4)),min(k2(3),k2(4)))
+   CALL col3443 (3,4,5,max(k1(3),k1(4)),min(k2(3),k2(4)))
 endif
+! call printmic("SELFCOLICE")
+aero_sums(6) = aero_sums(6) + sum((aeromas(:, 5) + aeromas(:, 8) + cnmhx(:, 1)) * dn0)  
+
 
 ! Ice-ice collisions
 do icx = 1,9
@@ -434,6 +486,16 @@ qx_lhr = qx
 if (jnmb(4) .ge. 1) then
    CALL psxfer2 (k1(3),k2(3),k1(4),k2(4),i,j)
 endif
+! call printmic("COLXFERS")
+aero_sums(7) = aero_sums(7) + sum((aeromas(:, 5) + aeromas(:, 8) + cnmhx(:, 1)) * dn0)  
+
+! if(i==5.and.j==5) then
+!    k = 176
+!    tempaeromas = aeromas(k, 5) + aeromas(k, 8) + cnmhx(k, 1)
+!    aero_diff = tempaeromas - init_aeromas
+!    print *, "Collision: ", tempaeromas, "Diff: ", aero_diff
+! endif
+
 
 ! Calcs r,q,c for each category considering melting processes
 ! in the order of pristine,cloud,drizzle,snow,agg,graupel,hail,rain
@@ -445,9 +507,24 @@ do mcat = 1,8
    endif
 enddo
 
+if(i==5.and.j==5) then
+   k = 176
+   tempaeromas = aeromas(k, 5) + aeromas(k, 8) + cnmhx(k, 1)
+   aero_diff = tempaeromas - init_aeromas
+   ! print *, "x02: ", tempaeromas, "Diff: ", aero_diff
+endif
 ! Add call to update LHR theta' after collisions and melting
  CALL calc_lhr_collmelt (m1)
 
+ if(i==5.and.j==5) then
+   k = 176
+   tempaeromas = aeromas(k, 5) + aeromas(k, 8) + cnmhx(k, 1)
+   aero_diff = tempaeromas - init_aeromas
+   ! print *, "CollMelt: ", tempaeromas, "Diff: ", aero_diff
+   ! print *, "salt", sum(aeromas(:,5))
+   ! print *, "regen", sum(aeromas(:,8))
+   ! print *, "incloud", sum(cnmhx(:,1))
+endif
 ! Save rx and qx before cloud nucleation...
 rx_lhr = rx
 qx_lhr = qx
@@ -456,6 +533,20 @@ qx_lhr = qx
 if (jnmb(1) .ge. 1) then
    CALL cldnuc (m1,k1cnuc,k2cnuc,k1dnuc,k2dnuc,ktop,kbot,rv(1),wp(1),i,j,dn0(1))
 endif
+! call printmic("CLDNUC")
+aero_sums(8) = aero_sums(8) + sum((aeromas(:, 5) + aeromas(:, 8) + cnmhx(:, 1)) * dn0)  
+
+! if(i==5.and.j==5) then
+!    k = 176
+!    tempaeromas = aeromas(k, 5) + aeromas(k, 8) + cnmhx(k, 1)
+!    aero_diff = tempaeromas - init_aeromas
+!    print *, "CloudNuc: ", tempaeromas, "Diff: ", aero_diff
+!    ! print *, "salt", sum(aeromas(:,5))
+!    ! print *, "regen", sum(aeromas(:,8))
+!    ! print *, "incloud", sum(cnmhx(:,1))
+
+! endif
+
 
 !Finds bottom and top layer of cloud water
 if(jnmb(1) .ge. 1) then
@@ -533,6 +624,17 @@ do lcat = 2,8
          ,pcpfillc,pcpfillr,sfcpcp,allpcp,rtgt)
    endif
 enddo
+! call printmic("SEDIM")
+aero_sums(9) = aero_sums(9) + sum((aeromas(:, 5) + aeromas(:, 8) + cnmhx(:, 1)) * dn0)  
+
+
+! if(i==5.and.j==5) then
+!    k = 176
+!    tempaeromas = aeromas(k, 5) + aeromas(k, 8) + cnmhx(k, 1)
+!    aero_diff = tempaeromas - init_aeromas
+!    print *, "Sedim: ", tempaeromas, "Diff: ", aero_diff
+! endif
+
 
 do k = 2,m1
    thp(k) = thp(k) + tairc(k)
@@ -548,6 +650,9 @@ if(iaerodep==1) &
 if(iforceccn.gt.0 .and. time .ge. fccnstart) then
  CALL reset_ccn(m1,time,rv(1),kbot,ktop)
 endif
+! call printmic("DEPOSITION")
+aero_sums(10) = aero_sums(10) + sum((aeromas(:, 5) + aeromas(:, 8) + cnmhx(:, 1)) * dn0)  
+
 
 return
 END SUBROUTINE mcphys

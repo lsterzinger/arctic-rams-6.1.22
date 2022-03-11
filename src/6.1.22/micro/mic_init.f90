@@ -635,13 +635,13 @@ do j = 1,n3
    if(isalt == 1) then
      !Set up concentration of FILM MODE SALT (#/kg)
      if(k<=2) salt_film_np(k,i,j)=saltf_maxt
-     if(k>2)  salt_film_np(k,i,j)=saltf_maxt*exp(-zt(k)/7000.)
+     if(k>2)  salt_film_np(k,i,j)=saltf_maxt
      !Set up concentration of JET MODE Mineral Dust (#/kg)
      if(k<=2) salt_jet_np(k,i,j)=saltj_maxt
-     if(k>2)  salt_jet_np(k,i,j)=saltj_maxt*exp(-zt(k)/7000.)
+     if(k>2)  salt_jet_np(k,i,j)=saltj_maxt
      !Set up concentration of SPUME MODE Mineral Dust (#/kg)
      if(k<=2) salt_spum_np(k,i,j)=salts_maxt
-     if(k>2)  salt_spum_np(k,i,j)=salts_maxt*exp(-zt(k)/7000.)
+     if(k>2)  salt_spum_np(k,i,j)=salts_maxt
 
      !Set up 3D Field of FILM MODE SALT mass (kg/kg)
      salt_film_mp(k,i,j) = ((aero_medrad(5)*aero_rg2rm(5))**3.) &

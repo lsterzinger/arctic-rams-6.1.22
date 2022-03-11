@@ -1640,11 +1640,11 @@ do j = 1,m3
    !Zero out very small mixing ratios
    do lcat = 1,ncat
      do k = 1,m1
-       if(jnmb(lcat)>=5 .and. (rx(k,lcat) < 1.e-12 .or. cx(k,lcat) <= 0.0)) then
+       if(jnmb(lcat)>=5 .and. (rx(k,lcat) < 0. .or. cx(k,lcat) <= 0.0)) then
          rx(k,lcat) = 0.
          cx(k,lcat) = 0.
        endif
-       if(rx(k,lcat) < 1.e-12) then
+       if(rx(k,lcat) < 0.) then
          rx(k,lcat) = 0.
          pcpvx(k,lcat) = 0.
          !Aerosol and solubility tracking
