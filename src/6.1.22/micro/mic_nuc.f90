@@ -103,8 +103,8 @@ elseif (jnmb(1) >= 5) then
          (acat==5 .and. isalt>0)    .or. &  ! Salt film mode
          (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
          (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
-         ! (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
-         (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
+         (acat==8 .and. iccnlev>=2)) then ! Small regenerated aerosol
+         ! (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
 
        !Assign aerosol specs to local arrays
        concen_nuc = aerocon(k,acat)
@@ -226,8 +226,8 @@ elseif (jnmb(1) >= 5) then
        (acat==5 .and. isalt>0)    .or. &  ! Salt film mode
        (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
        (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
-      !  (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
-       (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
+       (acat==8 .and. iccnlev>=2)) then  ! Small regenerated aerosol
+      !  (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
        if(aerocon(k,acat) > mincon) then
         aero_vap(acat) = (4.0 * 3.14159 * aero_rg(acat)**2) * concen_tab(acat)
         sfcareatotal = sfcareatotal + aero_vap(acat)
@@ -245,6 +245,13 @@ elseif (jnmb(1) >= 5) then
    total_drz_nucc=0.0
    total_cld_nucr=0.0
    total_drz_nucr=0.0
+
+   ! if(i==5 .and. j==5 .and. k==155) print *, "Cld Nuc End init: ", aeromas(k, 5) + aeromas(k, 8) + cnmhx(k, 1), &
+   !    "salt", aeromas(k, 5), &
+   !    "regen", aeromas(k, 8), &
+   !    "incloud", cnmhx(k, 1)
+
+
    do acat=1,aerocat
      ctc = 0
      if((acat==1)                  .or. &  ! CCN
@@ -255,8 +262,8 @@ elseif (jnmb(1) >= 5) then
         (acat==5 .and. isalt>0)    .or. &  ! Salt film mode
         (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
         (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
-      !   (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
-        (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
+        (acat==8 .and. iccnlev>=2)) then  ! Small regenerated aerosol
+      !   (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
       !Assign aerosol specs to local arrays
       concen_nuc = aerocon(k,acat)
       aeromass   = aeromas(k,acat)
@@ -403,12 +410,12 @@ elseif (jnmb(1) >= 5) then
            endif
            !Track immersion freezing droplets that contain large CCN, GCCN, or DUST
            ! Do not track immersion freezing for salt species (acat=5,6,7)
-           if(iifn==3.and.(acat==1.or.acat==2.or.acat==3.or.acat==4.or.acat==8.or.acat==9) &
+           if(iifn==3.and.(acat==1.or.acat==2.or.acat==3.or.acat==4.or.acat==9) &
                .and. rcm > 0.25e-6 .and. ic>1) num_ccn_ifn=ccncon(ic-1)
            !Track the amount of aerosol mass contained within new droplets 
            if(ccncon(ic)>=concen_tab(acat) .or. ccnmas(ic)>=aeromass .or. ic==itbin-1) then
              !Further immersion freezing tracking for (acat=1,2,3,4,8,9)
-             if(iifn==3.and.(acat==1.or.acat==2.or.acat==3.or.acat==4.or.acat==8.or.acat==9) & 
+             if(iifn==3.and.(acat==1.or.acat==2.or.acat==3.or.acat==4.or.acat==9) & 
                .and. rcm > 0.25e-6 .and. ic>1) num_ccn_ifn=concen_tab(acat)
              ccnmass=ccnmas(ic-1)
              go to 111
@@ -458,6 +465,10 @@ elseif (jnmb(1) >= 5) then
       endif !if ctc==1
      endif !if acat aerosol type is valid
    enddo !loop over acat 1 to aerocat
+   ! if(i==5 .and. j==5 .and. k==155) print *, "Cld Nuc End init: ", aeromas(k, 5) + aeromas(k, 8) + cnmhx(k, 1), &
+   !    "salt", aeromas(k, 5), &
+   !    "regen", aeromas(k, 8), &
+   !    "incloud", cnmhx(k, 1)
 
    !If not removing aerosol, only add number in excess of droplet number
    if(iccnlev==0) then

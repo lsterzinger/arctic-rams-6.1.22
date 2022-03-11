@@ -137,7 +137,7 @@ integer :: iconv,icongr,icicent,icjcent,icvert,ickmax,ickcent
 real :: cxrad,cyrad,czrad,cdivmax,ctau,ctmax
 
 !******Variables Needed for CCN nucleation and restore *********************
-integer :: iccnlev,ic,rgb,iforceccn
+integer :: iccnlev,ic,rgb,iforceccn,iprintaero
 real :: cin_max,ccn_max,gccn_max,dust1_max,dust2_max,saltf_max,saltj_max &
  ,salts_max,enxferratio,rxferratio,ccnmass,ccnnum,rxtemp,cxtemp,fracmass &
  ,cxloss,concen_nuc,aeromass,rg,rhosol,cldrat,epsil,ant,rcm,rmlar,rmsma &
@@ -196,7 +196,7 @@ integer, dimension(aerocat) :: iaero_chem,aero_vanthoff
 real, parameter :: mincon=0.         &  
                   ,minmas=0.        &
                   ,maxaero=20000.e6     &
-                  ,minmashydro=1.e-27   &
+                  ,minmashydro=0.   &
                   ,minifn=0.
 
 !Aerosol distribution spectral width (sigma)

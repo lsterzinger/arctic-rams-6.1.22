@@ -75,7 +75,7 @@ nwords = 133 * 1                 & !single values
        +   4 * nzpmax            & !max vertical levels
        +   3 * nzgmax            & !max soil levels
        +   1 * maxlite * 32      & !lite variables 32 char length strings
-       + 103                       !extras so we have enough buffer
+       + 104                       !extras so we have enough buffer
 
 allocate (buff(nwords))
 
@@ -233,6 +233,7 @@ CALL par_put_int   (ISALT,1)
 CALL par_put_int   (IDUST,1)
 CALL par_put_int   (ICCNLEV,1)
 CALL par_put_int   (IFORCECCN,1)
+CALL par_put_int   (IPRINTAERO,1)
 CALL par_put_float (BLH,1)
 CALL par_put_float (FCCNTS,1)
 CALL par_put_float (FCCNSTART,1)
@@ -770,6 +771,7 @@ CALL par_get_int   (ISALT,1)
 CALL par_get_int   (IDUST,1)
 CALL par_get_int   (ICCNLEV,1)
 CALL par_get_int   (IFORCECCN,1)
+CALL par_get_int   (IPRINTAERO,1)
 CALL par_get_float (BLH,1)
 CALL par_get_float (FCCNTS,1)
 CALL par_get_float (FCCNSTART,1)

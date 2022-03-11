@@ -24,14 +24,18 @@ use mem_cuparm
 use mem_varinit
 use mem_turb
 use mem_oda,   only:if_oda
-use micphys,   only:level,icheckmic,itempnudge,iforceccn,fccnstart
+use micphys,   only:level,icheckmic,itempnudge,iforceccn,fccnstart,iprintaero
 use mem_grid
+use mem_micro
 
 implicit none
-
+real :: a1,a2,diff
 integer :: callmassflux,massfluxfreq
 
- CALL acctimes ('INIT')
+if(time.eq.1 .and. ngrid==1 .and. iprintaero==1) open(66, file="aerodiff_all.dat", status='REPLACE')
+if(time.eq.1 .and. ngrid==1 .and. iprintaero==1) open(67, file="aerodiff_micro.dat", status='REPLACE')
+
+ CALL acctimes ('01INIT')
 
 !        +-------------------------------------------------------------+
 !        |   Timestep driver for the hybrid non-hydrostatic time-split |
@@ -41,7 +45,7 @@ integer :: callmassflux,massfluxfreq
 !  Zero out all tendency arrays.   
 !--------------------------------
  CALL tend0 ()          
- CALL acctimes ('TEND0')
+ CALL acctimes ('02TEND0')
 ! if(MOD(TIME,300.0).eq.0   ) then
 !    print *, "Running temperature nudging" 
 !    CALL temp_adj(mzp,mxp,myp,&
@@ -72,58 +76,58 @@ endif
 ! if (level  /=  3) then
    CALL thermo (mzp,mxp,myp,ia,iz,ja,jz) 
 ! endif
- CALL acctimes ('THERMO')
+ CALL acctimes ('03THERMO')
 
 !  Aerosol Initial & Sources of dust and salt
 !--------------------------------------------
  CALL aerosols ()
- CALL acctimes ('AEROSOLS')
+ CALL acctimes ('04AEROSOLS')
 
 !  Radiation parameterization
 !--------------------------------
  CALL radiate (mzp,mxp,myp,ia,iz,ja,jz)   
- CALL acctimes ('RADIATE')
+ CALL acctimes ('05RADIATE')
    
 !  Surface layer, soil, veggie, urban models
 !--------------------------------------------
  CALL sfc_driver (mzp,mxp,myp,ia,iz,ja,jz) 
- CALL acctimes ('SFC_DRIVER')
+ CALL acctimes ('06SFC_DRIVER')
 
 !  Coriolis terms
 !  ----------------------------------------
  CALL corlos (mzp,mxp,myp,i0,j0,ia,iz,ja,jz,izu,jzv) 
- CALL acctimes ('CORLOS')
+ CALL acctimes ('07CORLOS')
 
 !  Velocity advection
 !----------------------------------------
  CALL advectc ('V',mzp,mxp,myp,ia,iz,ja,jz,izu,jzv,mynum)
- CALL acctimes ('ADVECTv')
+ CALL acctimes ('08ADVECTv')
 
 !  Cumulus parameterization
 !----------------------------------------
  IF(NNQPARM(ngrid) == 1 ) CALL cuparm ()      
  IF(NNQPARM(ngrid) == 2 ) CALL kf_main ()      
- CALL acctimes ('CUPARM')
+ CALL acctimes ('09CUPARM')
 
 !  Analysis nudging and boundary condition
 !------------------------------------------
  IF(NUD_TYPE > 0) CALL datassim ()  
- CALL acctimes ('DATASSIM')
+ CALL acctimes ('10DATASSIM')
 
 !  Observation data assimilation 
 !----------------------------------------
  IF(IF_ODA == 1) CALL oda_nudge ()  
- CALL acctimes ('DATASSIM')
+ CALL acctimes ('11DATASSIM')
 
 !  Nested grid boundaries
 !----------------------------------------
  if(nxtnest(ngrid) >= 1) CALL nstbdriv ()  
- CALL acctimes ('NSTBDRIV')
+ CALL acctimes ('12NSTBDRIV')
 
 !  Rayleigh friction for theta
 !----------------------------------------
  CALL rayft ()           
- CALL acctimes ('RAYFT')
+ CALL acctimes ('13RAYFT')
 
 !  Update the overlap region between parallel nodes
 !---------------------------------------------------
@@ -131,91 +135,97 @@ endif
    CALL node_sendlbc (0)  
    CALL node_getlbc (0)  
  endif
- CALL acctimes ('UPDATElbc')
+ CALL acctimes ('14UPDATElbc')
 
 !  Sub-grid diffusion terms
 !----------------------------------------
  CALL diffuse ()
- CALL acctimes ('DIFFUSE')
+ CALL acctimes ('15DIFFUSE')
 
 !  Scalar advection
 !----------------------------------------
  CALL advectc ('T',mzp,mxp,myp,ia,iz,ja,jz,izu,jzv,mynum)
- CALL acctimes ('ADVECTs')
+ CALL acctimes ('16ADVECTs')
 
 !  Update scalars
 !----------------------------------------
  CALL predtr ()          
- CALL acctimes ('PREDTR')
+ CALL acctimes ('17PREDTR')
 
 ! Adele - added Thermodynamic diagnosis   
 !--------------------------------
 ! if (level  /=  3) then
    CALL thermo (mzp,mxp,myp,ia,iz,ja,jz) 
 ! endif
- CALL acctimes ('THERMO')
+ CALL acctimes ('18THERMO')
 
 !  Moisture variables positive definite
 !----------------------------------------
  CALL negadj1 (mzp,mxp,myp) 
- CALL acctimes ('NEGADJ1')
+ CALL acctimes ('19NEGADJ1')
 
 !  Microphysics
 !----------------------------------------
  if (level == 3) then
    !if (time<=5 .or. time>=3600) then
+   ! a1 = sum(micro_g(1)%salt_film_mp + micro_g(1)%regen_aero1_mp + micro_g(1)%snmcp)
+   ! print *, "Pre-micro", a1
+   ! if(time.eq.1) open(66, file="aerodiff.dat", status='NEW')
    CALL micro ()
+   ! a2 = sum(micro_g(1)%salt_film_mp + micro_g(1)%regen_aero1_mp + micro_g(1)%snmcp)
+   ! print *, "Post-micro",a2
+   ! write (66, *) int(time), a2, a2-a1
    !endif
  endif
- CALL acctimes ('MICRO')
+ CALL acctimes ('20MICRO')
 
 !  Check for negative micro and Nans
 !----------------------------------------
  if(icheckmic == 1) then
   CALL checkmicro ()
  endif
-
+call acctimes('21CHECKMIC')
 !  Thermodynamic diagnosis
 !----------------------------------------
 ! if (level /= 3) then
    CALL thermo (mzp,mxp,myp,1,mxp,1,myp) 
 ! endif
- CALL acctimes ('THERMO')
+ CALL acctimes ('22THERMO')
 
 !  Apply scalar b.c.'s
 !----------------------------------------
  CALL trsets ()          
- CALL acctimes ('TRSETS')
+ CALL acctimes ('23TRSETS')
 
 !  Lateral velocity boundaries - radiative
 !-------------------------------------------
  CALL latbnd ()         
- CALL acctimes ('LATBND')
+ CALL acctimes ('24LATBND')
 
 !  First stage Asselin filter
 !----------------------------------------
  CALL hadvance (1)     
- CALL acctimes ('HADVANCE')
+ CALL acctimes ('25HADVANCE')
 
 !  Buoyancy term for w equation
 !----------------------------------------
  CALL buoyancy ()
- CALL acctimes ('BUOYANCY')
+ CALL acctimes ('26BUOYANCY')
 
 !  Acoustic small timesteps
 !----------------------------------------
  CALL acoustic ()
- CALL acctimes ('ACOUSTIC')
+ CALL acctimes ('27ACOUSTIC')
 
 !  Last stage of Asselin filter
 !----------------------------------------
  CALL hadvance (2)      
- CALL acctimes ('HADVANCE')
+ CALL acctimes ('28HADVANCE')
 
 !  Velocity/pressure boundary conditions
 !----------------------------------------
  CALL vpsets ()          
- CALL acctimes ('VPSETS')
+ CALL acctimes ('29VPSETS')
 
 callmassflux=0    !flag for output BC mass flux: (0=off, 1==on)
 massfluxfreq=300. !frequency of BC mass flux (seconds)
@@ -228,6 +238,7 @@ if(callmassflux==1) &
       ,grid_g(ngrid)%dyu(1,1)  ,grid_g(ngrid)%dyv(1,1))
 
 return
+call acctimes('30MASSFLUX')
 END SUBROUTINE timestep
 
 !##############################################################################
@@ -239,7 +250,7 @@ use node_mod
 implicit none
 
 real, external :: valugp
-real :: total,total2,dn,pitotal
+real :: total,total2,dn,pitotal,a1,a2
 real,save :: lasttotal
 integer :: ip,jp,kp,i,j,k,patch
 character(len=*) :: string
@@ -247,7 +258,13 @@ character(len=*) :: string
 kp=0
 ip=20
 jp=25
-if(ngrid==1) then
+if(ngrid==1.and.iprintaero==1) then
+
+a1 = sum( &
+   ( micro_g(1)%salt_film_mp + micro_g(1)%regen_aero1_mp + micro_g(1)%cnmcp ) * basic_g(1)%dn0 &
+)   
+
+write(66,*) int(time), string, a1
 !if(time==0.)lasttotal=0.
 !do k=1,55
 !do i=ia,iz
