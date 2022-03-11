@@ -235,7 +235,7 @@ if(callmassflux==1) &
       ,basic_g(ngrid)%dn0(1,1,1) &
       ,basic_g(ngrid)%pp(1,1,1),basic_g(ngrid)%pi0(1,1,1) &
       ,grid_g(ngrid)%rtgu(1,1) ,grid_g(ngrid)%rtgv(1,1)    &
-      ,grid_g(ngrid)%dyu(1,1)  ,grid_g(ngrid)%dyv(1,1))
+      ,grid_g(ngrid)%dyu(1,1)  ,grid_g(ngrid)%dyv(1,1))  
 
 return
 call acctimes('30MASSFLUX')
