@@ -211,7 +211,7 @@ if (iccnlev>=2) then
    endif
    !Aerosol masses in cloud
    if (jnmb(1) >= 1) then
-     if (micro%rcp(k,i,j) >= 1.e-12) then
+     if (micro%rcp(k,i,j) >= 0.) then
       cnmhx(k,1) = micro%cnmcp(k,i,j)
       if(itrkepsilon==1) snmhx(k,1) = micro%snmcp(k,i,j)
       if(itrkdust==1)    dnmhx(k,1) = micro%dnmcp(k,i,j)
@@ -220,7 +220,7 @@ if (iccnlev>=2) then
    endif
    !Aerosol masses in rain
    if (jnmb(2) >= 1) then
-     if (micro%rrp(k,i,j) >= 1.e-12) then
+     if (micro%rrp(k,i,j) >= 0.) then
       cnmhx(k,2) = micro%cnmrp(k,i,j)
       if(itrkepsilon==1) snmhx(k,2) = micro%snmrp(k,i,j)
       if(itrkdust==1)    dnmhx(k,2) = micro%dnmrp(k,i,j)
@@ -229,7 +229,7 @@ if (iccnlev>=2) then
    endif
    !Aerosol masses in pristine ice 
    if (jnmb(3) >= 1) then
-     if (micro%rpp(k,i,j) >= 1.e-12) then
+     if (micro%rpp(k,i,j) >= 0.) then
       cnmhx(k,3) = micro%cnmpp(k,i,j)
       if(itrkepsilon==1) snmhx(k,3) = micro%snmpp(k,i,j)
       if(itrkdust==1)    dnmhx(k,3) = micro%dnmpp(k,i,j)
@@ -238,7 +238,7 @@ if (iccnlev>=2) then
    endif
    !Aerosol masses in snow
    if (jnmb(4) >= 1) then
-     if (micro%rsp(k,i,j) >= 1.e-12) then
+     if (micro%rsp(k,i,j) >= 0.) then
       cnmhx(k,4) = micro%cnmsp(k,i,j)
       if(itrkepsilon==1) snmhx(k,4) = micro%snmsp(k,i,j)
       if(itrkdust==1)    dnmhx(k,4) = micro%dnmsp(k,i,j)
@@ -247,7 +247,7 @@ if (iccnlev>=2) then
    endif
    !Aerosol masses in aggregates
    if (jnmb(5) >= 1) then
-     if (micro%rap(k,i,j) >= 1.e-12) then
+     if (micro%rap(k,i,j) >= 0.) then
       cnmhx(k,5) = micro%cnmap(k,i,j)
       if(itrkepsilon==1) snmhx(k,5) = micro%snmap(k,i,j)
       if(itrkdust==1)    dnmhx(k,5) = micro%dnmap(k,i,j)
@@ -256,7 +256,7 @@ if (iccnlev>=2) then
    endif
    !Aerosol masses in graupel
    if (jnmb(6) >= 1) then
-     if (micro%rgp(k,i,j) >= 1.e-12) then
+     if (micro%rgp(k,i,j) >= 0.) then
       cnmhx(k,6) = micro%cnmgp(k,i,j)
       if(itrkepsilon==1) snmhx(k,6) = micro%snmgp(k,i,j)
       if(itrkdust==1)    dnmhx(k,6) = micro%dnmgp(k,i,j)
@@ -265,7 +265,7 @@ if (iccnlev>=2) then
    endif
    !Aerosol masses in hail
    if (jnmb(7) >= 1) then
-     if (micro%rhp(k,i,j) >= 1.e-12) then
+     if (micro%rhp(k,i,j) >= 0.) then
       cnmhx(k,7) = micro%cnmhp(k,i,j)
       if(itrkepsilon==1) snmhx(k,7) = micro%snmhp(k,i,j)
       if(itrkdust==1)    dnmhx(k,7) = micro%dnmhp(k,i,j)
@@ -274,7 +274,7 @@ if (iccnlev>=2) then
    endif
    !Aerosol masses in drizzle
    if (jnmb(8) >= 1) then
-     if (micro%rdp(k,i,j) >= 1.e-12) then
+     if (micro%rdp(k,i,j) >= 0.) then
       cnmhx(k,8) = micro%cnmdp(k,i,j)
       if(itrkepsilon==1) snmhx(k,8) = micro%snmdp(k,i,j)
       if(itrkdust==1)    dnmhx(k,8) = micro%dnmdp(k,i,j)
@@ -1641,6 +1641,8 @@ do j = 1,m3
    do lcat = 1,ncat
      do k = 1,m1
        if(jnmb(lcat)>=5 .and. (rx(k,lcat) < 1.e-12 .or. cx(k,lcat) <= 0.0)) then
+         ccnmass = cnmhx(k,lcat)
+         cxloss = cx(k, lcat)
          rx(k,lcat) = 0.
          cx(k,lcat) = 0.
        endif
@@ -1650,6 +1652,14 @@ do j = 1,m3
          !Aerosol and solubility tracking
          if(iccnlev>=2) then
            cnmhx(k,lcat) = 0.
+           if (lcat==1 .or. lcat==2 .or. lcat==8) then
+            micro%regen_aero1_mp(k,i,j) = micro%regen_aero1_mp(k,i,j) + ccnmass
+            micro%regen_aero1_np(k,i,j) = micro%regen_aero1_np(k,i,j) + cxloss
+           else
+            micro%regen_aero2_mp(k,i,j) = micro%regen_aero2_mp(k,i,j) + ccnmass
+            micro%regen_aero2_np(k,i,j) = micro%regen_aero2_np(k,i,j) + cxloss
+           endif
+       
            if(itrkepsilon==1) snmhx(k,lcat) = 0.
            if(itrkdust==1)    dnmhx(k,lcat) = 0.
            if(itrkdustifn==1) dinhx(k,lcat) = 0.
