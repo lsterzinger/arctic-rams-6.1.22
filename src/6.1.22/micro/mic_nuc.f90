@@ -103,8 +103,8 @@ elseif (jnmb(1) >= 5) then
          (acat==5 .and. isalt>0)    .or. &  ! Salt film mode
          (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
          (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
-         ! (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
-         (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
+         (acat==8 .and. iccnlev>=2)) then  ! Small regenerated aerosol
+         ! (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
 
        !Assign aerosol specs to local arrays
        concen_nuc = aerocon(k,acat)
@@ -226,8 +226,8 @@ elseif (jnmb(1) >= 5) then
        (acat==5 .and. isalt>0)    .or. &  ! Salt film mode
        (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
        (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
-      !  (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
-       (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
+       (acat==8 .and. iccnlev>=2)) then  ! Small regenerated aerosol
+      !  (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
        if(aerocon(k,acat) > mincon) then
         aero_vap(acat) = (4.0 * 3.14159 * aero_rg(acat)**2) * concen_tab(acat)
         sfcareatotal = sfcareatotal + aero_vap(acat)
@@ -255,8 +255,8 @@ elseif (jnmb(1) >= 5) then
         (acat==5 .and. isalt>0)    .or. &  ! Salt film mode
         (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
         (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
-      !   (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
-        (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
+        (acat==8 .and. iccnlev>=2)) then  ! Small regenerated aerosol
+      !   (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
       !Assign aerosol specs to local arrays
       concen_nuc = aerocon(k,acat)
       aeromass   = aeromas(k,acat)
