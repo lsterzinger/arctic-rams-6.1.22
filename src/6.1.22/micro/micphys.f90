@@ -39,7 +39,7 @@ real, parameter    :: budget_scalet=1.
 integer :: level,icloud,idriz,irain,ipris,isnow,iaggr,igraup,ihail  &
   ,mkcoltab,irime,iplaws,iaerosol,idust,isalt,iaerorad,iifn,imbudget &
   ,isedim,itrkepsilon,itrkdust,itrkdustifn,iaerodep,icheckmic &
-  ,iaeroprnt,iaerohist
+  ,iaeroprnt,iaerohist,iregendust
 
 integer, dimension(maxgrds) :: iaerolbc,ico2lbc
 real, dimension(maxgrds) :: bctau

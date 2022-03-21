@@ -369,6 +369,7 @@ IF(GROUP.EQ.'$MODEL_OPTIONS') THEN
  IF(VR.EQ.'ITRKEPSILON')  CALL varseti (VR,ITRKEPSILON,NV,1,II,0,1)
  IF(VR.EQ.'ITRKDUST')     CALL varseti (VR,ITRKDUST,NV,1,II,0,1)
  IF(VR.EQ.'ITRKDUSTIFN')  CALL varseti (VR,ITRKDUSTIFN,NV,1,II,0,1)
+ IF(VR.EQ.'IREGENDUST')   CALL varseti (VR,IREGENDUST,NV,1,II,0,1)
 ENDIF
 
 IF(GROUP.EQ.'$MODEL_SOUND') THEN
@@ -522,7 +523,8 @@ WRITE(6,'(100(3(A19,I5)/))')         &
  ,'ITSFLG=',ITSFLG                   &
  ,'IRTSFLG=',IRTSFLG                 &
  ,'IUSFLG=',IUSFLG                   &
- ,'IMPL=',IMPL
+ ,'IMPL=',IMPL                       &
+ ,'IREGENDUST=',IREGENDUST
 
 PRINT*, ' '
 WRITE(6,*)'Non-grid-dependent Floats:'
