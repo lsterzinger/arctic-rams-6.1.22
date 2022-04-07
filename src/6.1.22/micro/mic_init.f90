@@ -446,7 +446,10 @@ do k = 1,m1
    expected_val = ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
    if (aerocon(k,1) > expected_val) then
       aerocon(k,1) = expected_val
-   endif 
+   endif
+  case(9)
+     aerocon(k,1)=0
+     aerocon(k,2)=0 
   end select
 
 
