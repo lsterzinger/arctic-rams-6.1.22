@@ -1655,7 +1655,7 @@ do j = 1,m3
            if (lcat==1 .or. lcat==2 .or. lcat==8) then
             micro%regen_aero1_mp(k,i,j) = micro%regen_aero1_mp(k,i,j) + ccnmass
             micro%regen_aero1_np(k,i,j) = micro%regen_aero1_np(k,i,j) + cxloss
-           else
+           else if (iregendust==1) then
             micro%regen_aero2_mp(k,i,j) = micro%regen_aero2_mp(k,i,j) + ccnmass
             micro%regen_aero2_np(k,i,j) = micro%regen_aero2_np(k,i,j) + cxloss
            endif

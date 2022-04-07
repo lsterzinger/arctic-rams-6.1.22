@@ -332,11 +332,13 @@ do k = k1,k2
      ! if not a liquid hydrometeor, release aerosol to acat 8
      if (lcat.eq.1 .or. lcat.eq.2 .or.  lcat.eq.8) then
       acat = 8
-     else
+      aeromas(k,acat) = aeromas(k,acat) + ccnmass
+      aerocon(k,acat) = aerocon(k,acat) + cxloss
+     else if (iregendust == 1) then
       acat=9
+      aeromas(k,acat) = aeromas(k,acat) + ccnmass
+      aerocon(k,acat) = aerocon(k,acat) + cxloss
      endif
-     aeromas(k,acat) = aeromas(k,acat) + ccnmass
-     aerocon(k,acat) = aerocon(k,acat) + cxloss
 
      if(itrkepsilon==1)then
       scnmass = snmhx(k,lcat) * rxferratio
