@@ -373,6 +373,7 @@ Subroutine reset_ccn (m1,time,rv,k1,k2)
 use micphys
 use rconstants
 use mem_grid, only:zt
+use mem_micro
 
 implicit none
 
@@ -449,7 +450,8 @@ do k = 1,m1
    endif
   case(9)
      aerocon(k,1)=0
-     aerocon(k,2)=0 
+   !   aerocon(k,2)=0 
+     micro_g(1)%cifnp = 0
   end select
 
 
