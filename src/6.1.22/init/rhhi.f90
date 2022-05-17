@@ -73,6 +73,7 @@ use mem_grid
 use mem_scratch
 use ref_sounding
 use rconstants
+use io_params, only: soundin
 
 implicit none
 
@@ -91,7 +92,7 @@ if (ps(1) .eq. 0.) then
       vs(nsndg) = 0.
    enddo
 
-   open(1,file='SOUND_IN',status='old',form='formatted')
+   open(1,file=soundin,status='old',form='formatted')
    do nsndg=1,maxsndg
       read(1,*,end=1999) ps(nsndg),ts(nsndg),rts(nsndg),us(nsndg),vs(nsndg)
       if(ps(nsndg).le.0.) go to 1999
