@@ -38,7 +38,7 @@ character(len=*) :: group,vr,cc
 real :: ff
 integer :: ii,nv
 integer :: inrflg
-integer, parameter ::nvgrid=39,nvstrt=83,nvindat=120,nvsound=10
+integer, parameter ::nvgrid=39,nvstrt=83,nvindat=119,nvsound=10
 integer ::  igrids(nvgrid),istart(nvstrt),iindat(nvindat),isound(nvsound)
 character(len=16) :: grids(nvgrid),start(nvstrt),indat(nvindat),sound(nvsound)
 data igrids/nvgrid*0/,istart/nvstrt*0/,iindat/nvindat*0/,isound/nvsound*0/
@@ -81,7 +81,7 @@ DATA INDAT/  &
      ,'IPRIS','ISNOW','IAGGR','IGRAUP','IHAIL','CPARM','DPARM','RPARM'    &
      ,'PPARM','SPARM','APARM','GPARM','HPARM','GNU','IAEROSOL','ISALT'    &
      ,'IDUST', 'IREGENDUST', 'ICCNLEV','IFORCECCN','BLH','FCCNTS','FCCNSTART'             &
-     ,'IIFN','IAERORAD','IAERODEP','IAEROPRNT','SOUNDIN'          &
+     ,'IIFN','IAERORAD','IAERODEP','IAEROPRNT'          &
      ,'IAEROHIST','CIN_MAX','CCN_MAX','GCCN_MAX','DUST1_MAX','DUST2_MAX'  &
      ,'SALTF_MAX','SALTJ_MAX','SALTS_MAX','IAEROLBC','ICO2LBC','BCTAU'    &
      ,'IAERO_CHEM','AERO_EPSILON','AERO_MEDRAD','ITRKEPSILON','ITRKDUST'  &
@@ -346,7 +346,6 @@ IF(GROUP.EQ.'$MODEL_OPTIONS') THEN
  IF(VR.EQ.'ICCNLEV')      CALL varseti (VR,ICCNLEV,NV,1,II,0,3)
  IF(VR.EQ.'IFORCECCN')    CALL varseti (VR,IFORCECCN,NV,1,II,0,20)
  IF(VR.EQ.'BLH')          CALL varsetf (VR,BLH,NV,1,FF,0.,1.E4)
- IF(VR.EQ.'SOUNDIN')      CALL varsetc (VR,SOUNDIN,NV,1,CC,1,strl1)
  IF(VR.EQ.'FCCNTS')       CALL varsetf (VR,FCCNTS,NV,1,FF,-1.e8,1.E8)
  IF(VR.EQ.'FCCNSTART')    CALL varsetf (VR,FCCNSTART,NV,1,FF,0.,1.E8)
  IF(VR.EQ.'IIFN')         CALL varseti (VR,IIFN,NV,1,II,0,3)

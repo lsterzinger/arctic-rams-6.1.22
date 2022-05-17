@@ -22,7 +22,7 @@ use grid_dims
 implicit none
 
 character(len=32) :: lite_vars(maxlite)
-character(len=strl1) :: hfilin,afilepref, soundin
+character(len=strl1) :: hfilin,afilepref
 
 integer :: ipast_sfc
 !-------------------------------------------------------------------------------
