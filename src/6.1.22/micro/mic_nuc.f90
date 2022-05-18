@@ -250,13 +250,13 @@ elseif (jnmb(1) >= 5) then
      if((acat==1)                  .or. &  ! CCN
         (acat==2)                  .or. &  ! GCCN
       ! Lucas - Turned off cloud nucleation from Dust (01.31.2022)
-      !   (acat==3 .and. idust>0)    .or. &  ! Small dust mode
-      !   (acat==4 .and. idust>0)    .or. &  ! Large dust mode
+        (acat==3 .and. idust>0)    .or. &  ! Small dust mode
+        (acat==4 .and. idust>0)    .or. &  ! Large dust mode
         (acat==5 .and. isalt>0)    .or. &  ! Salt film mode
         (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
         (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
-        (acat==8 .and. iccnlev>=2)) then  ! Small regenerated aerosol
-      !   (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
+        (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
+        (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
       !Assign aerosol specs to local arrays
       concen_nuc = aerocon(k,acat)
       aeromass   = aeromas(k,acat)
@@ -403,12 +403,12 @@ elseif (jnmb(1) >= 5) then
            endif
            !Track immersion freezing droplets that contain large CCN, GCCN, or DUST
            ! Do not track immersion freezing for salt species (acat=5,6,7)
-           if(iifn==3.and.(acat==1.or.acat==2.or.acat==3.or.acat==4.or.acat==8.or.acat==9) &
+           if(iifn==3.and.(acat==1.or.acat==2.or.acat==3.or.acat==4.or.acat==9) &
                .and. rcm > 0.25e-6 .and. ic>1) num_ccn_ifn=ccncon(ic-1)
            !Track the amount of aerosol mass contained within new droplets 
            if(ccncon(ic)>=concen_tab(acat) .or. ccnmas(ic)>=aeromass .or. ic==itbin-1) then
              !Further immersion freezing tracking for (acat=1,2,3,4,8,9)
-             if(iifn==3.and.(acat==1.or.acat==2.or.acat==3.or.acat==4.or.acat==8.or.acat==9) & 
+             if(iifn==3.and.(acat==1.or.acat==2.or.acat==3.or.acat==4.or.acat==9) & 
                .and. rcm > 0.25e-6 .and. ic>1) num_ccn_ifn=concen_tab(acat)
              ccnmass=ccnmas(ic-1)
              go to 111

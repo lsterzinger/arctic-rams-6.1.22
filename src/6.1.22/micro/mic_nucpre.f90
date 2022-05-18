@@ -263,16 +263,16 @@ real, dimension(m1) :: dn0,rv
  !Compute fraction of each aerosol species to reserve for icenuc
  !Then recompute the remainder of the aerosols for cldnuc
  if(nifn(k) > 0.0)then
- do acat=1,aerocat
+  do acat=1,aerocat
    totifnn(k,acat) = totifnn(k,acat) * ifnfrac
    totifnm(k,acat) = totifnm(k,acat) * ifnfrac
    if(iccnlev>=1 .and. ifnfrac>0.0) then
-    if((acat==1)                  .or. &  ! CCN
-       (acat==2)                  .or. &  ! GCCN
-       (acat==3 .and. idust>0)    .or. &  ! Small dust mode
-       (acat==4 .and. idust>0)    .or. &  ! Large dust mode
-       (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
-       (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
+    ! if((acat==1)                  .or. &  ! CCN
+    !  (acat==2)                  .or. &  ! GCCN
+    if((acat==3 .and. idust>0)    .or. &  ! Small dust mode
+    (acat==4 .and. idust>0)    .or. &  ! Large dust mode
+    !  (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
+    (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
       !Assign aerosol specs to local arrays
       epsil      = aero_epsilon(acat)
 
