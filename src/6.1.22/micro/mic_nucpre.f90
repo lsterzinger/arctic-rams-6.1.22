@@ -101,8 +101,8 @@ real, dimension(m1) :: dn0,rv
       ! (acat==2)                  .or. &  ! GCCN
       if((acat==3 .and. idust>0)    .or. &  ! Small dust mode
       (acat==4 .and. idust>0)    .or. &  ! Large dust mode
-      (acat==8 .and. iccnlev>=2)) then  ! Small regenerated aerosol
-      ! (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
+      ! (acat==8 .and. iccnlev>=2)) then  ! Small regenerated aerosol
+      (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
 
     concen_nuc = aerocon(k,acat)
     aeromass   = aeromas(k,acat)
