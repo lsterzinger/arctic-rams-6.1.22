@@ -37,8 +37,8 @@ do acat=1,aerocat
      (acat==5 .and. isalt>0)    .or. &  ! Salt film mode
      (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
      (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
-    !  (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
-     (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
+     (acat==8 .and. iccnlev>=2)) then  ! Small regenerated aerosol
+    !  (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
 
      !Assign aerosol specs to local arrays
      aeromass   = aeromas(k,acat)
