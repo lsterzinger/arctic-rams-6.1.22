@@ -75,7 +75,7 @@ nwords = 133 * 1                 & !single values
        +   4 * nzpmax            & !max vertical levels
        +   3 * nzgmax            & !max soil levels
        +   1 * maxlite * 32      & !lite variables 32 char length strings
-       + 103                       !extras so we have enough buffer
+       + 104                       !extras so we have enough buffer
 
 allocate (buff(nwords))
 
@@ -231,6 +231,7 @@ CALL par_put_float (GNU,8)
 CALL par_put_int   (IAEROSOL,1)
 CALL par_put_int   (ISALT,1)
 CALL par_put_int   (IDUST,1)
+CALL par_put_int   (IREGENDUST, 1)
 CALL par_put_int   (ICCNLEV,1)
 CALL par_put_int   (IFORCECCN,1)
 CALL par_put_float (BLH,1)
@@ -264,7 +265,6 @@ CALL par_put_float (aero_rhosol,9)
 do nm=1,nmachs
    CALL par_send (machnum(nm),2)
 enddo
-
 deallocate (buff)
 
 return
@@ -768,6 +768,7 @@ CALL par_get_float (GNU,8)
 CALL par_get_int   (IAEROSOL,1)
 CALL par_get_int   (ISALT,1)
 CALL par_get_int   (IDUST,1)
+CALL par_get_int   (IREGENDUST, 1)
 CALL par_get_int   (ICCNLEV,1)
 CALL par_get_int   (IFORCECCN,1)
 CALL par_get_float (BLH,1)

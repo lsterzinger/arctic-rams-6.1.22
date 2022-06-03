@@ -32,34 +32,34 @@ do acat=1,aerocat
       
   if((acat==1)                  .or. &  ! CCN
      (acat==2)                  .or. &  ! GCCN
-     (acat==3 .and. idust>0)    .or. &  ! Small dust mode
-     (acat==4 .and. idust>0)    .or. &  ! Large dust mode
+    !  (acat==3 .and. idust>0)    .or. &  ! Small dust mode
+    !  (acat==4 .and. idust>0)    .or. &  ! Large dust mode
      (acat==5 .and. isalt>0)    .or. &  ! Salt film mode
      (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
      (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
-     (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
-     (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
+     (acat==8 .and. iccnlev>=2)) then  ! Small regenerated aerosol
+    !  (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
 
      !Assign aerosol specs to local arrays
      aeromass   = aeromas(k,acat)
 
      !Keep median radius and aerosol mass in bounds
-     if(aerocon(k,acat) > mincon .and. aeromas(k,acat) > minmas) then
+    !  if(aerocon(k,acat) > mincon .and. aeromas(k,acat) > minmas) then
 
-       rhosol=aero_rhosol(acat)
-       aero_rg(acat)=((0.23873/rhosol*aeromas(k,acat)/aerocon(k,acat)) &
-                    **(1./3.))/aero_rg2rm(acat)
+    !    rhosol=aero_rhosol(acat)
+    !    aero_rg(acat)=((0.23873/rhosol*aeromas(k,acat)/aerocon(k,acat)) &
+    !                 **(1./3.))/aero_rg2rm(acat)
 
-       if(aero_rg(acat) < 0.01e-6) aero_rg(acat) = 0.01e-6
-       if(aero_rg(acat) > 6.50e-6) aero_rg(acat) = 6.50e-6
+    !   !  if(aero_rg(acat) < 0.01e-6) aero_rg(acat) = 0.01e-6
+    !   !  if(aero_rg(acat) > 6.50e-6) aero_rg(acat) = 6.50e-6
 
-       aeromas(k,acat) = ((aero_rg(acat)*aero_rg2rm(acat))**3.) &
-                       *aerocon(k,acat)/(0.23873/rhosol)
+    !   !  aeromas(k,acat) = ((aero_rg(acat)*aero_rg2rm(acat))**3.) &
+    !   !                  *aerocon(k,acat)/(0.23873/rhosol)
 
-       if(iccnlev>=2 .and. itrkepsilon==1 .and. (acat==8.or.acat==9)) &
-         regenmas(k,acat-7) = regenmas(k,acat-7) * (aeromas(k,acat) / aeromass)
+    !    if(iccnlev>=2 .and. itrkepsilon==1 .and. (acat==8.or.acat==9)) &
+    !      regenmas(k,acat-7) = regenmas(k,acat-7) * (aeromas(k,acat) / aeromass)
 
-     endif
+    !  endif
 
   endif
 
@@ -97,11 +97,11 @@ real, dimension(m1) :: dn0,rv
    totifnn(k,acat) = 0.0
    totifnm(k,acat) = 0.0
 
-   if((acat==1)                  .or. &  ! CCN
-      (acat==2)                  .or. &  ! GCCN
-      (acat==3 .and. idust>0)    .or. &  ! Small dust mode
+  !  if((acat==1)                  .or. &  ! CCN
+      ! (acat==2)                  .or. &  ! GCCN
+      if((acat==3 .and. idust>0)    .or. &  ! Small dust mode
       (acat==4 .and. idust>0)    .or. &  ! Large dust mode
-      (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
+      ! (acat==8 .and. iccnlev>=2)) then  ! Small regenerated aerosol
       (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
 
     concen_nuc = aerocon(k,acat)
@@ -263,16 +263,16 @@ real, dimension(m1) :: dn0,rv
  !Compute fraction of each aerosol species to reserve for icenuc
  !Then recompute the remainder of the aerosols for cldnuc
  if(nifn(k) > 0.0)then
- do acat=1,aerocat
+  do acat=1,aerocat
    totifnn(k,acat) = totifnn(k,acat) * ifnfrac
    totifnm(k,acat) = totifnm(k,acat) * ifnfrac
    if(iccnlev>=1 .and. ifnfrac>0.0) then
-    if((acat==1)                  .or. &  ! CCN
-       (acat==2)                  .or. &  ! GCCN
-       (acat==3 .and. idust>0)    .or. &  ! Small dust mode
-       (acat==4 .and. idust>0)    .or. &  ! Large dust mode
-       (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
-       (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
+    ! if((acat==1)                  .or. &  ! CCN
+    !  (acat==2)                  .or. &  ! GCCN
+    if((acat==3 .and. idust>0)    .or. &  ! Small dust mode
+    (acat==4 .and. idust>0)    .or. &  ! Large dust mode
+    !  (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
+    (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
       !Assign aerosol specs to local arrays
       epsil      = aero_epsilon(acat)
 

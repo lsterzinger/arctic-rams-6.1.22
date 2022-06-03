@@ -98,13 +98,13 @@ elseif (jnmb(1) >= 5) then
 
       if((acat==1)                  .or. &  ! CCN
          (acat==2)                  .or. &  ! GCCN
-         (acat==3 .and. idust>0)    .or. &  ! Small dust mode
-         (acat==4 .and. idust>0)    .or. &  ! Large dust mode
+         ! (acat==3 .and. idust>0)    .or. &  ! Small dust mode
+         ! (acat==4 .and. idust>0)    .or. &  ! Large dust mode
          (acat==5 .and. isalt>0)    .or. &  ! Salt film mode
          (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
          (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
-         (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
-         (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
+         (acat==8 .and. iccnlev>=2)) then  ! Small regenerated aerosol
+         ! (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
 
        !Assign aerosol specs to local arrays
        concen_nuc = aerocon(k,acat)
@@ -198,14 +198,14 @@ elseif (jnmb(1) >= 5) then
         !    ,wtcon2,jrg1,jrg2,epstab,jw,jconcen,jtemp,rgccn1,tab)
         !elseif(iaero_chem(acat)==2) then
         !  if (acat==1) then !accumulation mode
-            CALL aero_nuc_tab_nacl15 (rv(k),rvlsair(k),eps1,eps2,wtw1,wtw2,wtcon1 &
-              ,wtcon2,jrg1,jrg2,epstab,jw,jconcen,jtemp,rgccn1,tab)
+            ! CALL aero_nuc_tab_nacl15 (rv(k),rvlsair(k),eps1,eps2,wtw1,wtw2,wtcon1 &
+            !   ,wtcon2,jrg1,jrg2,epstab,jw,jconcen,jtemp,rgccn1,tab)
         !  elseif (acat==2) then !aitken mode
         !    CALL aero_nuc_tab_nacl11 (rv(k),rvlsair(k),eps1,eps2,wtw1,wtw2,wtcon1 &
         !      ,wtcon2,jrg1,jrg2,epstab,jw,jconcen,jtemp,rgccn1,tab,k)
         !  else
-        !    CALL aero_nuc_tab_nacl (rv(k),rvlsair(k),eps1,eps2,wtw1,wtw2,wtcon1 &
-        !      ,wtcon2,jrg1,jrg2,epstab,jw,jconcen,jtemp,rgccn1,tab)
+           CALL aero_nuc_tab_nacl (rv(k),rvlsair(k),eps1,eps2,wtw1,wtw2,wtcon1 &
+             ,wtcon2,jrg1,jrg2,epstab,jw,jconcen,jtemp,rgccn1,tab)
         !  endif
         !endif
         concen_tab(acat) = concen_nuc * tab * epstemp
@@ -221,13 +221,13 @@ elseif (jnmb(1) >= 5) then
     aero_vap(acat)   = 0.0  ! Total surface area of aerosol category
     if((acat==1)                  .or. &  ! CCN
        (acat==2)                  .or. &  ! GCCN
-       (acat==3 .and. idust>0)    .or. &  ! Small dust mode
-       (acat==4 .and. idust>0)    .or. &  ! Large dust mode
+      !  (acat==3 .and. idust>0)    .or. &  ! Small dust mode
+      !  (acat==4 .and. idust>0)    .or. &  ! Large dust mode
        (acat==5 .and. isalt>0)    .or. &  ! Salt film mode
        (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
        (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
-       (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
-       (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
+       (acat==8 .and. iccnlev>=2)) then  ! Small regenerated aerosol
+      !  (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
        if(aerocon(k,acat) > mincon) then
         aero_vap(acat) = (4.0 * 3.14159 * aero_rg(acat)**2) * concen_tab(acat)
         sfcareatotal = sfcareatotal + aero_vap(acat)
@@ -249,6 +249,7 @@ elseif (jnmb(1) >= 5) then
      ctc = 0
      if((acat==1)                  .or. &  ! CCN
         (acat==2)                  .or. &  ! GCCN
+      ! Lucas - Turned off cloud nucleation from Dust (01.31.2022)
         (acat==3 .and. idust>0)    .or. &  ! Small dust mode
         (acat==4 .and. idust>0)    .or. &  ! Large dust mode
         (acat==5 .and. isalt>0)    .or. &  ! Salt film mode
@@ -402,12 +403,12 @@ elseif (jnmb(1) >= 5) then
            endif
            !Track immersion freezing droplets that contain large CCN, GCCN, or DUST
            ! Do not track immersion freezing for salt species (acat=5,6,7)
-           if(iifn==3.and.(acat==1.or.acat==2.or.acat==3.or.acat==4.or.acat==8.or.acat==9) &
+           if(iifn==3.and.(acat==1.or.acat==2.or.acat==3.or.acat==4.or.acat==9) &
                .and. rcm > 0.25e-6 .and. ic>1) num_ccn_ifn=ccncon(ic-1)
            !Track the amount of aerosol mass contained within new droplets 
            if(ccncon(ic)>=concen_tab(acat) .or. ccnmas(ic)>=aeromass .or. ic==itbin-1) then
              !Further immersion freezing tracking for (acat=1,2,3,4,8,9)
-             if(iifn==3.and.(acat==1.or.acat==2.or.acat==3.or.acat==4.or.acat==8.or.acat==9) & 
+             if(iifn==3.and.(acat==1.or.acat==2.or.acat==3.or.acat==4.or.acat==9) & 
                .and. rcm > 0.25e-6 .and. ic>1) num_ccn_ifn=concen_tab(acat)
              ccnmass=ccnmas(ic-1)
              go to 111

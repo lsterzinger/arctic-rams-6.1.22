@@ -39,7 +39,7 @@ real, parameter    :: budget_scalet=1.
 integer :: level,icloud,idriz,irain,ipris,isnow,iaggr,igraup,ihail  &
   ,mkcoltab,irime,iplaws,iaerosol,idust,isalt,iaerorad,iifn,imbudget &
   ,isedim,itrkepsilon,itrkdust,itrkdustifn,iaerodep,icheckmic &
-  ,iaeroprnt,iaerohist
+  ,iaeroprnt,iaerohist,iregendust
 
 integer, dimension(maxgrds) :: iaerolbc,ico2lbc
 real, dimension(maxgrds) :: bctau
@@ -139,9 +139,10 @@ real :: cxrad,cyrad,czrad,cdivmax,ctau,ctmax
 !******Variables Needed for CCN nucleation and restore *********************
 integer :: iccnlev,ic,rgb,iforceccn
 real :: cin_max,ccn_max,gccn_max,dust1_max,dust2_max,saltf_max,saltj_max &
+ ,dust1_max_bl, dust1_max_ft, saltf_max_bl, saltf_max_ft &
  ,salts_max,enxferratio,rxferratio,ccnmass,ccnnum,rxtemp,cxtemp,fracmass &
  ,cxloss,concen_nuc,aeromass,rg,rhosol,cldrat,epsil,ant,rcm,rmlar,rmsma &
- ,power,scnmass,dcnmass,dinmass,blh,fccnts,fccnstart
+ ,power,scnmass,dcnmass,dinmass,blh,fccnts,fccnstart,dustmass
 real, dimension(nzpmax) :: nifn
 
 !Tracking total aerosol mass, immersion freezing number in hydrometeors cats
@@ -193,11 +194,11 @@ integer, dimension(aerocat) :: iaero_chem,aero_vanthoff
 
 !Minimum aerosol concentration (#/kg) and mass (kg/kg) 
 !values for condition statements involving aerosols
-real, parameter :: mincon=1.e-1         &  
-                  ,minmas=1.e-21        &
+real, parameter :: mincon=0.         &  
+                  ,minmas=0.        &
                   ,maxaero=20000.e6     &
                   ,minmashydro=1.e-27   &
-                  ,minifn=1.e-14
+                  ,minifn=0.
 
 !Aerosol distribution spectral width (sigma)
 !Note: do not change this unless you update cloud nucleation lookup

@@ -222,11 +222,11 @@ endif
        print*,'FATAL - IAEROSOL OUT OF RANGE: MUST BE 0-1'
      IFATERR = IFATERR + 1
  endif
- if (idust .lt. 0 .or. idust .gt. 2) THEN
+ if (idust .lt. 0 .or. idust .gt. 3) THEN
        print*,'FATAL - IDUST OUT OF RANGE: MUST BE 0-2'
      IFATERR = IFATERR + 1
  endif
- if (isalt .lt. 0 .or. isalt .gt. 2) THEN
+ if (isalt .lt. 0 .or. isalt .gt. 3) THEN
        print*,'FATAL - ISALT OUT OF RANGE: MUST BE 0-2'
      IFATERR = IFATERR + 1
  endif
