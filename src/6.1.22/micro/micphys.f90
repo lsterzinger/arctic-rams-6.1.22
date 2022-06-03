@@ -139,6 +139,7 @@ real :: cxrad,cyrad,czrad,cdivmax,ctau,ctmax
 !******Variables Needed for CCN nucleation and restore *********************
 integer :: iccnlev,ic,rgb,iforceccn
 real :: cin_max,ccn_max,gccn_max,dust1_max,dust2_max,saltf_max,saltj_max &
+ ,dust1_max_bl, dust1_max_ft, saltf_max_bl, saltf_max_ft &
  ,salts_max,enxferratio,rxferratio,ccnmass,ccnnum,rxtemp,cxtemp,fracmass &
  ,cxloss,concen_nuc,aeromass,rg,rhosol,cldrat,epsil,ant,rcm,rmlar,rmsma &
  ,power,scnmass,dcnmass,dinmass,blh,fccnts,fccnstart,dustmass
