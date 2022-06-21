@@ -377,7 +377,7 @@ use mem_grid, only:zt
 implicit none
 
 integer :: k,m1,k1,k2
-real :: ccn_maxt,time
+real :: ccn_maxt,time,salt_maxt
 real, dimension(m1) :: rv
 real :: expected_val
 
@@ -387,6 +387,7 @@ real :: expected_val
 
 !Convert RAMSIN #/mg to #/kg
 ccn_maxt = ccn_max * 1.e6 
+salt_maxt = saltf_max * 1.e6
 
 !decay timescale
 !fccnts = 28800. !8 hours
@@ -447,7 +448,13 @@ do k = 1,m1
    if (aerocon(k,1) > expected_val) then
       aerocon(k,1) = expected_val
    endif 
+  
+
+  case(9) ! reset salt to init and regen1 to 0
+   iccnlev=2
   end select
+
+
 
 
   ! case(5) !decrease bottom BL layer, reset FT
