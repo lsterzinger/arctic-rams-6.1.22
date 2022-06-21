@@ -209,10 +209,10 @@ data aero_sigma  / 1.50 &       !CCN
                   ,1.50 &       !GCCN 
                   ,1.80 &       !small mineral dust
                   ,1.80 &       !large mineral dust
-                  ,1.80 &       !salt film mode 
-                  ,1.80 &       !salt jet mode 
-                  ,1.80 &       !salt spume mode 
-                  ,1.80 &       !sub-micro regenerated aerosol (mixed)
+                  ,1.50 &       !salt film mode 
+                  ,1.50 &       !salt jet mode 
+                  ,1.50 &       !salt spume mode 
+                  ,1.50 &       !sub-micro regenerated aerosol (mixed)
                   ,1.80 /       !super-micro regenerated aerosol (mixed)
 !Set the relationship between median radius and mean mass radius 
 !based on aerosol distribution spectral width
@@ -221,10 +221,10 @@ data aero_rg2rm  / 1.2797 &     !CCN
                   ,1.2797 &     !GCCN 
                   ,1.6791 &     !small mineral dust
                   ,1.6791 &     !large mineral dust
-                  ,1.6791 &     !salt film mode 
-                  ,1.6791 &     !salt jet mode 
-                  ,1.6791 &     !salt spume mode
-                  ,1.6791 &     !sub-micro regenerated aerosol (mixed)
+                  ,1.2797 &     !salt film mode 
+                  ,1.2797 &     !salt jet mode 
+                  ,1.2797 &     !salt spume mode
+                  ,1.2797 &     !sub-micro regenerated aerosol (mixed)
                   ,1.6791 /     !super-micro regenerated aerosol (mixed)
 
 !*********************************************************************

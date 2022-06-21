@@ -198,14 +198,14 @@ elseif (jnmb(1) >= 5) then
         !    ,wtcon2,jrg1,jrg2,epstab,jw,jconcen,jtemp,rgccn1,tab)
         !elseif(iaero_chem(acat)==2) then
         !  if (acat==1) then !accumulation mode
-            ! CALL aero_nuc_tab_nacl15 (rv(k),rvlsair(k),eps1,eps2,wtw1,wtw2,wtcon1 &
-            !   ,wtcon2,jrg1,jrg2,epstab,jw,jconcen,jtemp,rgccn1,tab)
+            CALL aero_nuc_tab_nacl15 (rv(k),rvlsair(k),eps1,eps2,wtw1,wtw2,wtcon1 &
+              ,wtcon2,jrg1,jrg2,epstab,jw,jconcen,jtemp,rgccn1,tab)
         !  elseif (acat==2) then !aitken mode
         !    CALL aero_nuc_tab_nacl11 (rv(k),rvlsair(k),eps1,eps2,wtw1,wtw2,wtcon1 &
         !      ,wtcon2,jrg1,jrg2,epstab,jw,jconcen,jtemp,rgccn1,tab,k)
         !  else
-           CALL aero_nuc_tab_nacl (rv(k),rvlsair(k),eps1,eps2,wtw1,wtw2,wtcon1 &
-             ,wtcon2,jrg1,jrg2,epstab,jw,jconcen,jtemp,rgccn1,tab)
+         !   CALL aero_nuc_tab_nacl (rv(k),rvlsair(k),eps1,eps2,wtw1,wtw2,wtcon1 &
+         !     ,wtcon2,jrg1,jrg2,epstab,jw,jconcen,jtemp,rgccn1,tab)
         !  endif
         !endif
         concen_tab(acat) = concen_nuc * tab * epstemp
