@@ -450,8 +450,6 @@ do k = 1,m1
    endif 
   
 
-  case(9) ! reset salt to init and regen1 to 0
-   iccnlev=2
   end select
 
 

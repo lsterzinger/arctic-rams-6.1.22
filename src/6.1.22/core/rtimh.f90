@@ -31,11 +31,13 @@ implicit none
 
 integer :: callmassflux,massfluxfreq
 
-if(time.lt.fccnstart) then
-   iccnlev=0
-else
-   iccnlev=3
-endif 
+if(iforceccn.eq.9) then
+   if(time.lt.fccnstart) then
+      iccnlev=0
+   else
+      iccnlev=3
+   endif 
+endif
 
  CALL acctimes ('INIT')
 
