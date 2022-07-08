@@ -559,8 +559,8 @@ endif
  dust1_maxt = dust1_max * 1.e6
  dust2_maxt = dust2_max * 1.e6  
 
- dust1_maxt_bl = dust1_max_bl * 1e6
- dust1_maxt_ft = dust1_max_ft * 1e6
+ dust1_maxt_bl = dust1_max_bl * 1.e6
+ dust1_maxt_ft = dust1_max_ft * 1.e6
 
 do j = 1,n3
  do i = 1,n2
