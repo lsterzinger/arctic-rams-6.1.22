@@ -834,7 +834,7 @@ do k = 2,m1-1
    vapnuc=0.0
    if(jnmb(1)>=5)then
      if(iccnlev==0) then
-       vapnuc = max(0.,haznuc + diagni - cx(k,3))
+       vapnuc = max(0.,haznuc + diagni - cx(k,3) - cx(k,4)) ! make sure that snow crystals are considered
      elseif(iccnlev>=1 .and. iifn==3) then 
        vapnuc = max(0.,haznuc + diagni)
      elseif(iccnlev>=1 .and. iifn<=2) then 
