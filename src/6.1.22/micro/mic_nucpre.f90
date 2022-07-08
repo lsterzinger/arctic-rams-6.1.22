@@ -77,9 +77,9 @@ use mem_grid
 implicit none
 
 integer :: m1,k,in_thresh
-real :: nin_a,nin_b,nin_c,nin_d,tot_in,ifnfrac, total_aero
-real :: vapnuc,vapnucr,availvap,immersed
-real, dimension(m1) :: dn0,rv
+real :: nin_a,nin_b,nin_c,nin_d,tot_in,ifnfrac
+real :: vapnuc,vapnucr,availvap,immersed,nifn2
+real, dimension(m1) :: dn0,rv,total_aero
 
 !**********************************************************************
 !*********** ICE NUCLEI DETERMIINATION ********************************
@@ -88,7 +88,7 @@ real, dimension(m1) :: dn0,rv
  !diameter greater than 0.5 microns for use as IN
  tot_in = 0.0
  total_in(k) = 0.0
- total_aero = 0.0
+ total_aero(k) = 0.0
  
  !Loop over CCN, GCCN, SMALL DUST, LARGE DUST, REGEN 1&2 (1,2,3,4,8,9)
  !Not looping over salt species since these cannot act is ice nuclei
@@ -110,7 +110,7 @@ real, dimension(m1) :: dn0,rv
     rg         = aero_rg(acat)
     rhosol     = aero_rhosol(acat)
 
-    total_aero = total_aero + aerocon(k,acat)
+    total_aero(k) = total_aero(k) + aerocon(k,acat)
 
     !If aerosols are present in the given category then proceed
     if(concen_nuc > mincon) then
@@ -233,7 +233,7 @@ real, dimension(m1) :: dn0,rv
    nifn(k) = nifn(k) / dn0(k) * 1.e3 !Convert #/L to #/kg
   
    ! nifn should not exceed total amount of aerosol
-    nifn(k) = min(total_aero,nifn(k)) !IFN in #/kg
+    nifn(k) = min(total_aero(k),nifn(k)) !IFN in #/kg
  
    !Limit activation to only the number greater than that already
    !activated for the given grid cell parcel.
@@ -241,11 +241,11 @@ real, dimension(m1) :: dn0,rv
    tot_in  = tot_in  - ifnnucx(k)
    if(nifn(k) < 1.e-6) nifn(k) = 0.0
    if(tot_in  < 1.e-6) tot_in  = 0.0
-   ifnfrac = max(0.0,min(1.0,nifn(k)/tot_in))
-   if(nifn(k)==0.0 .or. tot_in==0.0) ifnfrac = 0.0
+   !ifnfrac = max(0.0,min(1.0,nifn(k)/tot_in))
+   !if(nifn(k)==0.0 .or. tot_in==0.0) ifnfrac = 0.0
  else
    nifn(k) = 0.0
-   ifnfrac = 0.0
+   !ifnfrac = 0.0
  endif
 
  !Pre-determine amount of IN that produce pristine ice and
@@ -262,15 +262,16 @@ real, dimension(m1) :: dn0,rv
    endif
    vapnuc = vapnucr / emb0(3)
    nifn(k) = vapnuc !IFN in #/kg
-   ifnfrac = max(0.,min(1.,nifn(k)/tot_in))
+   !ifnfrac = max(0.,min(1.,nifn(k)/tot_in))
  endif
 
  !Compute fraction of each aerosol species to reserve for icenuc
  !Then recompute the remainder of the aerosols for cldnuc
- if(nifn(k) > 0.0)then
+ nifn2=nifn(k)
+ if(nifn2 > 0.0)then
   do acat=aerocat,1,-1 ! loop backwards to get to acat=9 first
    
-    if(iccnlev>=1 .and. ifnfrac>0.0) then
+    if(iccnlev>=1) then
 
     if((acat==3 .and. idust>0)    .or. &  ! Small dust mode
     (acat==4 .and. idust>0)    .or. &  ! Large dust mode
@@ -280,14 +281,21 @@ real, dimension(m1) :: dn0,rv
 
       ! because of the reversal of the acat loop, we will deplete from regen dust first
       if(aerocon(k,acat) > 0) then ! check if each category has any aerosol to remove  
-        ifnfrac = min(nifn(k),aerocon(k,acat)) / aerocon(k,acat)
-        totifnn(k,acat) = totifnn(k,acat) * ifnfrac
-        totifnm(k,acat) = totifnm(k,acat) * ifnfrac
+        if (nifn2 > aerocon(k,acat)) then
+           totifnn(k,acat) = aerocon(k,acat)
+           totifnm(k,acat) = aeromas(k,acat)
+        else
+           ifnfrac = nifn2/totifnn(k,acat)
+           totifnm(k,acat) = min(aeromas(k,acat),totifnm(k,acat) * ifnfrac)
+           !Redefine totifnn to be number of particles to deplete from the category
+           totifnn(k,acat) = nifn2
+        endif
 
         aerocon(k,acat) = aerocon(k,acat) - totifnn(k,acat)
         aeromas(k,acat) = aeromas(k,acat) - totifnm(k,acat)
         total_in(k)     = total_in(k)     - totifnn(k,acat)
         ifnnucx(k)      = ifnnucx(k)      + totifnn(k,acat)
+        nifn2 = nifn2 - totifnn(k,acat)
 
       endif
 
@@ -330,6 +338,9 @@ real, dimension(m1) :: dn0,rv
     endif
    endif
  enddo
+ !If we had more nifn calculated by the parameterization than we had actual particles
+ if (nifn2>0.) nifn(k)=nifn(k)-nifn2
+
  endif
 
 return
