@@ -77,7 +77,7 @@ use mem_grid
 implicit none
 
 integer :: m1,k,in_thresh
-real :: nin_a,nin_b,nin_c,nin_d,tot_in,ifnfrac
+real :: nin_a,nin_b,nin_c,nin_d,tot_in,ifnfrac, total_aero
 real :: vapnuc,vapnucr,availvap,immersed
 real, dimension(m1) :: dn0,rv
 
@@ -88,7 +88,8 @@ real, dimension(m1) :: dn0,rv
  !diameter greater than 0.5 microns for use as IN
  tot_in = 0.0
  total_in(k) = 0.0
-
+ total_aero = 0.0
+ 
  !Loop over CCN, GCCN, SMALL DUST, LARGE DUST, REGEN 1&2 (1,2,3,4,8,9)
  !Not looping over salt species since these cannot act is ice nuclei
  do acat=1,aerocat
@@ -108,6 +109,8 @@ real, dimension(m1) :: dn0,rv
     aeromass   = aeromas(k,acat)
     rg         = aero_rg(acat)
     rhosol     = aero_rhosol(acat)
+
+    total_aero = total_aero + aerocon(k,acat)
 
     !If aerosols are present in the given category then proceed
     if(concen_nuc > mincon) then
@@ -228,7 +231,9 @@ real, dimension(m1) :: dn0,rv
    tot_in  = tot_in /1.29*dn0(k) !Convert FROM STP
    tot_in  = tot_in  / dn0(k) * 1.e6 !Convert #/cm3 to #/kg
    nifn(k) = nifn(k) / dn0(k) * 1.e3 !Convert #/L to #/kg
-   nifn(k) = min(tot_in,nifn(k)) !IFN in #/kg
+  
+   ! nifn should not exceed total amount of aerosol
+    nifn(k) = min(total_aero,nifn(k)) !IFN in #/kg
  
    !Limit activation to only the number greater than that already
    !activated for the given grid cell parcel.
@@ -263,29 +268,39 @@ real, dimension(m1) :: dn0,rv
  !Compute fraction of each aerosol species to reserve for icenuc
  !Then recompute the remainder of the aerosols for cldnuc
  if(nifn(k) > 0.0)then
-  do acat=1,aerocat
-   totifnn(k,acat) = totifnn(k,acat) * ifnfrac
-   totifnm(k,acat) = totifnm(k,acat) * ifnfrac
-   if(iccnlev>=1 .and. ifnfrac>0.0) then
-    ! if((acat==1)                  .or. &  ! CCN
-    !  (acat==2)                  .or. &  ! GCCN
+  do acat=aerocat,1,-1 ! loop backwards to get to acat=9 first
+   
+    if(iccnlev>=1 .and. ifnfrac>0.0) then
+
     if((acat==3 .and. idust>0)    .or. &  ! Small dust mode
     (acat==4 .and. idust>0)    .or. &  ! Large dust mode
-    !  (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
     (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
       !Assign aerosol specs to local arrays
       epsil      = aero_epsilon(acat)
 
+      ! because of the reversal of the acat loop, we will deplete from regen dust first
+      if(aerocon(k,acat) > 0) then ! check if each category has any aerosol to remove  
+        ifnfrac = min(nifn(k),aerocon(k,acat)) / aerocon(k,acat)
+        totifnn(k,acat) = totifnn(k,acat) * ifnfrac
+        totifnm(k,acat) = totifnm(k,acat) * ifnfrac
+
+        aerocon(k,acat) = aerocon(k,acat) - totifnn(k,acat)
+        aeromas(k,acat) = aeromas(k,acat) - totifnm(k,acat)
+        total_in(k)     = total_in(k)     - totifnn(k,acat)
+        ifnnucx(k)      = ifnnucx(k)      + totifnn(k,acat)
+
+      endif
+
       !Aerosol and solubility tracking
       if(iccnlev>=2 .and. itrkepsilon==1 .and. (acat==8.or.acat==9) &
        .and. aeromas(k,acat)>0.) then
-         epsil = min(1.0,regenmas(k,acat-7)/aeromas(k,acat))
+         epsil = min(1.0,regenmas(k,acat-7 )) / aeromas(k,acat)
       endif
 
-      aerocon(k,acat) = aerocon(k,acat) - totifnn(k,acat)
-      aeromas(k,acat) = aeromas(k,acat) - totifnm(k,acat)
-      total_in(k)     = total_in(k)     - totifnn(k,acat)
-      ifnnucx(k)      = ifnnucx(k)      + totifnn(k,acat)
+      ! aerocon(k,acat) = aerocon(k,acat) - totifnn(k,acat)
+      ! aeromas(k,acat) = aeromas(k,acat) - totifnm(k,acat)
+      ! total_in(k)     = total_in(k)     - totifnn(k,acat)
+      ! ifnnucx(k)      = ifnnucx(k)      + totifnn(k,acat)
 
       !Aerosol and solubility tracking
       !Store any aerosol mass in cnmhx arrays
