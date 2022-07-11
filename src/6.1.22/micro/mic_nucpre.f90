@@ -319,8 +319,9 @@ real, dimension(m1) :: dn0,rv,total_aero
        cnmhx(k,3) = cnmhx(k,3) + totifnm(k,acat)
        if(itrkepsilon==1) then
          snmhx(k,3) = snmhx(k,3) + totifnm(k,acat) * epsil
-         if(acat==8.or.acat==9) &
-          regenmas(k,acat-7) = regenmas(k,acat-7) - totifnm(k,acat) * epsil         
+         if(acat==9) then
+          regenmas(k,3) = regenmas(k,3)- totifnm(k,acat) * epsil  
+         endif       
        endif
        if(itrkdust==1 .and. (acat==3 .or. acat==4)) &
          dnmhx(k,3) = dnmhx(k,3) + totifnm(k,acat)
