@@ -233,8 +233,11 @@ real, dimension(m1) :: dn0,rv,total_aero
    nifn(k) = nifn(k) / dn0(k) * 1.e3 !Convert #/L to #/kg
   
    ! nifn should not exceed total amount of aerosol
+   if(iccnlev >=1 ) then
     nifn(k) = min(total_aero(k),nifn(k)) !IFN in #/kg
- 
+   else 
+    nifn(k) = min(tot_in,nifn(k)) !IFN in #/kg
+   endif
    !Limit activation to only the number greater than that already
    !activated for the given grid cell parcel.
    nifn(k) = nifn(k) - ifnnucx(k)
@@ -339,9 +342,10 @@ real, dimension(m1) :: dn0,rv,total_aero
    endif
  enddo
  !If we had more nifn calculated by the parameterization than we had actual particles
- if (nifn2>0.) nifn(k)=nifn(k)-nifn2
-
- endif
+!  print *, "K, NIFN = ", k, nifn(k)
+!  if (k == 100 .and. i == 6 .and. j == 6) print *, "NIFN = ", nifn(k), "nifn2 = ", nifn2
+ if (nifn2>0. .and. iccnlev >= 1) nifn(k)=nifn(k)-nifn2
+endif
 
 return
 END SUBROUTINE prenuc_ifn
