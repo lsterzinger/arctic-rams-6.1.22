@@ -303,9 +303,9 @@ real, dimension(m1) :: dn0,rv,total_aero
       endif
 
       !Aerosol and solubility tracking
-      if(iccnlev>=2 .and. itrkepsilon==1 .and. (acat==8.or.acat==9) &
+      if(iccnlev>=2 .and. itrkepsilon==1 .and. acat==9 &
        .and. aeromas(k,acat)>0.) then
-         epsil = min(1.0,regenmas(k,acat-7 )) / aeromas(k,acat)
+         epsil = min(1.0,regenmas(k, 3)) / aeromas(k,acat)
       endif
 
       ! aerocon(k,acat) = aerocon(k,acat) - totifnn(k,acat)
@@ -342,6 +342,7 @@ real, dimension(m1) :: dn0,rv,total_aero
     endif
    endif
  enddo
+
  !If we had more nifn calculated by the parameterization than we had actual particles
 !  print *, "K, NIFN = ", k, nifn(k)
 !  if (k == 100 .and. i == 6 .and. j == 6) print *, "NIFN = ", nifn(k), "nifn2 = ", nifn2
