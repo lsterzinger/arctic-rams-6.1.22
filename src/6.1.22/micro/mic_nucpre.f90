@@ -283,7 +283,7 @@ real, dimension(m1) :: dn0,rv,total_aero
       epsil      = aero_epsilon(acat)
 
       ! because of the reversal of the acat loop, we will deplete from regen dust first
-      if(aerocon(k,acat) > 0) then ! check if each category has any aerosol to remove  
+      if(aerocon(k,acat) > 0 .and. totifnn(k,acat) > 0.) then ! check if each category has any aerosol to remove  
         if (nifn2 > aerocon(k,acat)) then
            totifnn(k,acat) = aerocon(k,acat)
            totifnm(k,acat) = aeromas(k,acat)
