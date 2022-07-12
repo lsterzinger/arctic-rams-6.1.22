@@ -309,9 +309,14 @@ elseif (jnmb(1) >= 5) then
 
         !Add nucleated cloud water and number here if removing aerosol   
         if(iccnlev>=1)then
-          cx(k,drop) = cx(k,drop) + concen_tab(acat)
-          rx(k,drop) = rx(k,drop) + vaprccn
-
+         if (time .ge. fccnstart .and. time .lt. fccnstart + 60.) then 
+            print *, "Skipping cloud nuc"
+            cx(k,drop) = cx(k,drop)
+            rx(k,drop) = rx(k,drop) 
+         else
+            cx(k,drop) = cx(k,drop) + concen_tab(acat)
+            rx(k,drop) = rx(k,drop) + vaprccn
+         endif
           !Nucleation budget diagnostics
           if(imbudget >= 1) then
             xnuccldrt(k) = xnuccldrt(k) + vaprccn * budget_scalet
@@ -511,6 +516,7 @@ Subroutine icenuc (m1,kc1,kc2,kd1,kd2,k1pnuc,k2pnuc,ngr,rv,dn0,dtlt)
 
 use rconstants
 use micphys
+use mem_grid, only : time
 
 implicit none
 
@@ -834,7 +840,7 @@ do k = 2,m1-1
    vapnuc=0.0
    if(jnmb(1)>=5)then
      if(iccnlev==0) then
-       vapnuc = max(0.,haznuc + diagni - cx(k,3))
+       vapnuc = max(0.,haznuc + diagni - cx(k,3) - cx(k,4)) ! make sure that snow crystals are considered
      elseif(iccnlev>=1 .and. iifn==3) then 
        vapnuc = max(0.,haznuc + diagni)
      elseif(iccnlev>=1 .and. iifn<=2) then 
@@ -1000,8 +1006,13 @@ do k = 2,m1-1
    !***********************************************************************
 
    !Add new ice crystals to pristine ice category
-   rx(k,3) = rx(k,3) + vapnucr
-   cx(k,3) = cx(k,3) + vapnuc
+   if (time .ge. fccnstart .and. time .lt. fccnstart + 60.) then 
+      rx(k,3) = rx(k,3)
+      cx(k,3) = cx(k,3) 
+   else
+      rx(k,3) = rx(k,3) + vapnucr
+      cx(k,3) = cx(k,3) + vapnuc
+   endif
 
    pcthaze = haznuc / max(1.e-30,(haznuc + diagni + immerin))
 
@@ -1091,9 +1102,9 @@ use micphys
 use node_mod, only:i0,j0
 implicit none
 
-integer :: k,m1,drop,icat,i,j
+integer :: k,m1,drop,icat,iaero,i,j
 real,dimension(m1) :: dn0
-real :: num_ccn_ifn,numdrops
+real :: num_ccn_ifn,numdrops,cxtemp2,snowfrac
 !This routine is essentially a copy of code from cldnuc to determine
 !the number and mass of aerosol to deplete given the number of cloud
 !droplets that exist when we start having fully interactive aerosol
@@ -1102,82 +1113,91 @@ acat = 1
 drop = 1
 cnmhx = 0.
 
-do k = 1,m1
-  do icat = 1,ncat
-!Initialize aerosol mass in hydrometeor categories. This will
-!be overwritten for cloud droplets.
-     cnmhx(k,icat) = ((aero_medrad(1)*aero_rg2rm(1))**3.) &
-                *cx(k,icat)/(0.23873/aero_rhosol(1))
-  enddo
-  if (cx(k,1)>0) then
-    !Convert units for setting up lognormal distribution
-    numdrops = cx(k,1) * dn0(k)
-    concen_nuc = aerocon(k,1)  * dn0(k) !Convert #/kg to #/m3
-    aeromass = aeromas(k,1)         * dn0(k) !Convert kg/kg to kg/m3
+do iaero = 1,2
+  if (iaero==1) then
+    acat = 5 !salt film
+    icat = 1 !cloud droplets
+    drop = 1 !cloud droplets, not drizzle
+  else
+    acat = 3 !dust1
+    icat = 3 !pristine ice
+    drop = 3 !pristine ice
+  endif
 
-    !For determining mass of distirubtion to remove, use "concen_nuc"
-    !Doing size specific removal. Preferentially remove larger particles.
-    !Set up binned distribution masses(kg) and sizes(meters)
-    if(rg<=0.015e-6) then
-      rmsma = 1.0e-23
-      rmlar = 2.0e-16
-    elseif(rg>0.015e-6 .and. rg<=0.03e-6) then
+  do k = 1,m1
+    
+    cxtemp2 = cx(k,icat)
+    !For dust, get concentration of pristine ice + snow
+    if (iaero==2) cxtemp2=cxtemp2+cx(k,icat+1)
+
+    if (cxtemp2>0) then
+      !Convert units for setting up lognormal distribution
+      numdrops = cxtemp2 * dn0(k)
+      concen_nuc = aerocon(k,1)  * dn0(k) !Convert #/kg to #/m3
+      aeromass = aeromas(k,1)         * dn0(k) !Convert kg/kg to kg/m3
+
+      !For determining mass of distirubtion to remove, use "concen_nuc"
+      !Doing size specific removal. Preferentially remove larger particles.
+      !Set up binned distribution masses(kg) and sizes(meters)
+      if(rg<=0.015e-6) then
+             rmsma = 1.0e-23
+             rmlar = 2.0e-16
+      elseif(rg>0.015e-6 .and. rg<=0.03e-6) then
              rmsma = 1.0e-22
              rmlar = 2.0e-15
-    elseif(rg>0.03e-6 .and. rg<=0.04e-6) then
+      elseif(rg>0.03e-6 .and. rg<=0.04e-6) then
              rmsma = 1.0e-21
              rmlar = 2.0e-14
-          elseif(rg>0.04e-6 .and. rg<=0.08e-6) then
+       elseif(rg>0.04e-6 .and. rg<=0.08e-6) then
              rmsma = 3.0e-21
              rmlar = 6.0e-14
-          elseif(rg>0.08e-6 .and. rg<=0.16e-6) then
+       elseif(rg>0.08e-6 .and. rg<=0.16e-6) then
              rmsma = 5.0e-20
              rmlar = 1.0e-12
-          elseif(rg>0.16e-6 .and. rg<=0.32e-6) then
+       elseif(rg>0.16e-6 .and. rg<=0.32e-6) then
              rmsma = 5.0e-19
              rmlar = 1.0e-11
-          elseif(rg>0.32e-6 .and. rg<=0.64e-6) then
+       elseif(rg>0.32e-6 .and. rg<=0.64e-6) then
              rmsma = 1.0e-18
              rmlar = 2.0e-11
-          elseif(rg>0.64e-6 .and. rg<=0.96e-6) then
+       elseif(rg>0.64e-6 .and. rg<=0.96e-6) then
              rmsma = 1.0e-17
              rmlar = 2.0e-10
-          elseif(rg>0.96e-6 .and. rg<=2.00e-6) then
+       elseif(rg>0.96e-6 .and. rg<=2.00e-6) then
              rmsma = 3.0e-17
              rmlar = 6.0e-10
-          elseif(rg>2.00e-6 .and. rg<=3.00e-6) then
+       elseif(rg>2.00e-6 .and. rg<=3.00e-6) then
              rmsma = 1.0e-16
              rmlar = 2.0e-09
-          elseif(rg>3.00e-6 .and. rg<=4.00e-6) then
+       elseif(rg>3.00e-6 .and. rg<=4.00e-6) then
              rmsma = 7.0e-16
              rmlar = 1.5e-08
-          elseif(rg>4.00e-6 .and. rg<=5.00e-6) then
+       elseif(rg>4.00e-6 .and. rg<=5.00e-6) then
              rmsma = 7.0e-16
              rmlar = 1.5e-08
-          elseif(rg>5.00e-6 .and. rg<=6.00e-6) then
+       elseif(rg>5.00e-6 .and. rg<=6.00e-6) then
              rmsma = 1.0e-15
              rmlar = 2.0e-08
-          elseif(rg>6.00e-6) then
+       elseif(rg>6.00e-6) then
              rmsma = 1.0e-15
              rmlar = 2.0e-08
-          endif
+       endif
 
-          !Set up binned distribution concentration
-          power = alog10(rmsma/rmlar) / float(itbin-1)
-          rhosol = aero_rhosol(acat)
-          rg = aero_medrad(acat)
-          do ic=1,itbin
+       !Set up binned distribution concentration
+       power = alog10(rmsma/rmlar) / float(itbin-1)
+       rhosol = aero_rhosol(acat)
+       rg = aero_medrad(acat)
+       do ic=1,itbin
            !bin radius equals [(3/4) x (1/pi) x (1/rho) x mass of bin] ^ (1/3)
            smass(ic) = rmlar * 10.**(float(ic-1) * power) !solute masses (kg)
            binrad(ic)=(0.23873/rhosol*smass(ic))**(.33333) !radius (meters)
-          enddo
+       enddo
 
-          !Loop thru bins to determine amount of mass to remove based on number.
-          !This removes from the large end of the distribution first and works toward
-          !the smaller end with the assumption that larger particles activate first
-          ccnmass = 0.0 !Variable ccnmass is kg/m3
-          num_ccn_ifn = 0.0 !Number of particles > 0.25 microns radius
-          do ic=1,itbin-1
+       !Loop thru bins to determine amount of mass to remove based on number.
+       !This removes from the large end of the distribution first and works toward
+       !the smaller end with the assumption that larger particles activate first
+       ccnmass = 0.0 !Variable ccnmass is kg/m3
+       do ic=1,itbin-1
            rcm=0.5*(binrad(ic)+binrad(ic+1))
            ccncon(ic) = concen_nuc/(1.47336267*rcm)*exp(-(alog(rcm/rg))**2/0.6909863)
            ccncon(ic) = 1.00032 * ccncon(ic)*(binrad(ic)-binrad(ic+1))
@@ -1186,19 +1206,12 @@ do k = 1,m1
             ccncon(ic) = ccncon(ic) + ccncon(ic-1)
             ccnmas(ic) = ccnmas(ic) + ccnmas(ic-1)
            endif
-           !Track immersion freezing droplets that contain large CCN, GCCN, or DUST
-           ! Do not track immersion freezing for salt species (acat=5,6,7)
-           if(iifn==3.and.(acat==1.or.acat==2.or.acat==3.or.acat==4.or.acat==8.or.acat==9) &
-               .and. rcm > 0.25e-6 .and. ic>1) num_ccn_ifn=ccncon(ic-1)
            !Track the amount of aerosol mass contained within new droplets 
            if(ccncon(ic)>=numdrops .or. ccnmas(ic)>=aeromass .or. ic==itbin-1) then
-             !Further immersion freezing tracking for (acat=1,2,3,4,8,9)
-             if(iifn==3.and.(acat==1.or.acat==2.or.acat==3.or.acat==4.or.acat==8.or.acat==9) & 
-               .and. rcm > 0.25e-6 .and. ic>1) num_ccn_ifn=numdrops
              ccnmass=ccnmas(ic-1)
              go to 111
            endif
-          enddo
+       enddo
 111       continue
 
           !If either is zero, set both to zero
@@ -1210,7 +1223,6 @@ do k = 1,m1
           !Convert #/m3 back to #/kg and kg/m3 back to kg/kg
           numdrops = numdrops / dn0(k) !Convert #/m3 to #/kg
           ccnmass          = ccnmass          / dn0(k) !Convert kg/m3 to kg/kg
-          num_ccn_ifn      = num_ccn_ifn      / dn0(k) !Convert #/m3 to #/kg
 
           !Subtract off aerosol mass and number and keep both + or zero
           aerocon(k,acat) = aerocon(k,acat) - numdrops
@@ -1222,23 +1234,35 @@ do k = 1,m1
 
           !Aerosol and solubility tracking
           if(iccnlev>=2)then
-            cnmhx(k,drop) = ccnmass
-            if(itrkepsilon==1) then
-             snmhx(k,drop) = snmhx(k,drop) + ccnmass * epsil
-             if(acat==8.or.acat==9) &
-              regenmas(k,acat-7) = regenmas(k,acat-7) - ccnmass * epsil
+            if (iaero==1) then
+              cnmhx(k,drop) = ccnmass
+              if(itrkepsilon==1) then
+               snmhx(k,drop) = snmhx(k,drop) + ccnmass * epsil
+              endif
+              if(itrkdust==1 .and. (acat==3 .or. acat==4)) &
+                dnmhx(k,drop) = dnmhx(k,drop) + ccnmass
+            else
+              snowfrac = min(1.,max(0.,cx(k,4)/(cx(k,3)+cx(k,4))))
+              cnmhx(k,drop) = ccnmass*(1.-snowfrac)
+              cnmhx(k,drop+1) = ccnmass*snowfrac
+              if(itrkepsilon==1) then
+               snmhx(k,drop) = snmhx(k,drop) + ccnmass * (1.-snowfrac) * epsil
+               snmhx(k,drop+1) = snmhx(k,drop) + ccnmass * snowfrac * epsil
+              endif
+              if(itrkdust==1 .and. (acat==3 .or. acat==4)) then
+                dnmhx(k,drop) = dnmhx(k,drop) + ccnmass * (1.-snowfrac)
+                dnmhx(k,drop+1) = dnmhx(k,drop) + ccnmass * snowfrac
+              endif
             endif
-            if(itrkdust==1 .and. (acat==3 .or. acat==4)) &
-              dnmhx(k,drop) = dnmhx(k,drop) + ccnmass
           endif
 
           !Store number of large particles for immersion freezing
           !if (1) 2-moment cloud, (2) iccnlev>=1, (3) iifn==3
-          if(iifn==3) then
-            immerhx(k,drop) = immerhx(k,drop) + num_ccn_ifn !#/kg
-            total_in(k) = total_in(k) - num_ccn_ifn
+          if(iifn==3 .and. iaero==2) then
+            ifnnucx (k) = ifnnucx(k) + numdrops
           endif
-  endif
-enddo
+     endif !if droplets present
+   enddo !loop over k
+enddo !iaero loop
 return
 END Subroutine remove_aero_init

@@ -338,6 +338,8 @@ do k = k1,k2
       acat=9
       aeromas(k,acat) = aeromas(k,acat) + ccnmass
       aerocon(k,acat) = aerocon(k,acat) + cxloss
+
+      ifnnucx(k) = ifnnucx(k) - cxloss
      endif
 
      if(itrkepsilon==1)then
