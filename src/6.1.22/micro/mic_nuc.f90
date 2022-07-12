@@ -309,9 +309,14 @@ elseif (jnmb(1) >= 5) then
 
         !Add nucleated cloud water and number here if removing aerosol   
         if(iccnlev>=1)then
-          cx(k,drop) = cx(k,drop) + concen_tab(acat)
-          rx(k,drop) = rx(k,drop) + vaprccn
-
+         if (time .ge. fccnstart .and. time .lt. fccnstart + 60.) then 
+            print *, "Skipping cloud nuc"
+            cx(k,drop) = cx(k,drop)
+            rx(k,drop) = rx(k,drop) 
+         else
+            cx(k,drop) = cx(k,drop) + concen_tab(acat)
+            rx(k,drop) = rx(k,drop) + vaprccn
+         endif
           !Nucleation budget diagnostics
           if(imbudget >= 1) then
             xnuccldrt(k) = xnuccldrt(k) + vaprccn * budget_scalet
@@ -511,6 +516,7 @@ Subroutine icenuc (m1,kc1,kc2,kd1,kd2,k1pnuc,k2pnuc,ngr,rv,dn0,dtlt)
 
 use rconstants
 use micphys
+use mem_grid, only : time
 
 implicit none
 
@@ -1000,8 +1006,13 @@ do k = 2,m1-1
    !***********************************************************************
 
    !Add new ice crystals to pristine ice category
-   rx(k,3) = rx(k,3) + vapnucr
-   cx(k,3) = cx(k,3) + vapnuc
+   if (time .ge. fccnstart .and. time .lt. fccnstart + 60.) then 
+      rx(k,3) = rx(k,3)
+      cx(k,3) = cx(k,3) 
+   else
+      rx(k,3) = rx(k,3) + vapnucr
+      cx(k,3) = cx(k,3) + vapnuc
+   endif
 
    pcthaze = haznuc / max(1.e-30,(haznuc + diagni + immerin))
 
