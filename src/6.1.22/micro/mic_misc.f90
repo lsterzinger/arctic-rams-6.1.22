@@ -734,7 +734,7 @@ elseif (jnmb(lcat) >= 5) then
         dn1 = dmean * (exp(gammln(gnu(lcat))-gammln(gnu(lcat)+3.))) ** (1./3.)
         !fac1 = min(cx(k,lcat),cx(k,lcat) * gammp(gnu(lcat),emb1(lcat)/dn1))
         !fac2 = min(rx(k,lcat),rx(k,lcat) * gammp(gnu(lcat)+3.,emb1(lcat)/dn1))
-        if (jnmb(8).eq.0) then
+        if (jnmb(8).eq.0) then   
          dmean=1.0e-3
         do
          fac1=cx(k,lcat)*gammp(gnu(lcat),dmean/dn1)
@@ -749,7 +749,7 @@ elseif (jnmb(lcat) >= 5) then
 
          ! Lucas 8/1/2022
          ! If Drizzle durned off, use empty vapdrizt array to track liquid mass transfer
-         vapdrizt(k) = (rx(k,1)-fac2)
+         vapdrizt(k) = vapdrizt(k) + (rx(k,1)-fac2)
 
          ! Lucas 8/1/2022
          ! Move in-cloud CCN 
