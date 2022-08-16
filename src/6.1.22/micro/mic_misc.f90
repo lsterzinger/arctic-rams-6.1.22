@@ -734,18 +734,18 @@ elseif (jnmb(lcat) >= 5) then
         dn1 = dmean * (exp(gammln(gnu(lcat))-gammln(gnu(lcat)+3.))) ** (1./3.)
         !fac1 = min(cx(k,lcat),cx(k,lcat) * gammp(gnu(lcat),emb1(lcat)/dn1))
         !fac2 = min(rx(k,lcat),rx(k,lcat) * gammp(gnu(lcat)+3.,emb1(lcat)/dn1))
-        if (jnmb(8).eq.0) then   
-         dmean=1.0e-3
-        do
-         fac1=cx(k,lcat)*gammp(gnu(lcat),dmean/dn1)
-         fac2=rx(k,lcat)*gammp(gnu(lcat)+3.,dmean/dn1)
-         if (fac2/fac1<=emb1(lcat)) exit
-         dmean=dmean-0.1e-4
-        enddo
-         cx(k,2) = cx(k,2) + (cx(k,1)-fac1)
-         rx(k,2) = rx(k,2) + (rx(k,1)-fac2)
-         cx(k,lcat) = fac1
-         rx(k,lcat) = fac2
+      if (dmean>1e-3) then !if mean diam is greater than 1mm, move all cloud to rain
+         if (jnmb(8).eq.0) then
+            cx(k,2) = cx(k,2) + cx(k,1)
+            rx(k,2) = rx(k,2) + rx(k,1)
+            cx(k,lcat) = 0.
+            rx(k,lcat) = 0.
+         else
+            cx(k,8) = cx(k,8) + (cx(k,1)-fac1)
+            rx(k,8) = rx(k,8) + (rx(k,1)-fac2)
+            cx(k,lcat) = fac1
+            rx(k,lcat) = fac2
+         endif
 
          ! Lucas 8/1/2022
          ! If Drizzle durned off, use empty vapdrizt array to track liquid mass transfer
@@ -759,15 +759,32 @@ elseif (jnmb(lcat) >= 5) then
             cnmhx(k, 1) = fac2aero
          endif
       else
-        fac1 = cx(k,lcat) * gammp(gnu(lcat),6.5e-4/dn1)
-        fac2 = rx(k,lcat) * gammp(gnu(lcat)+3.,6.5e-4/dn1)
-        cx(k,8) = cx(k,8) + (cx(k,1)-fac1)
-        rx(k,8) = rx(k,8) + (rx(k,1)-fac2)
-        cx(k,lcat) = fac1
-        rx(k,lcat) = fac2
+         !fac1 = min(cx(k,lcat),cx(k,lcat) * gammp(gnu(lcat),emb1(lcat)/dn1))
+         !fac2 = min(rx(k,lcat),rx(k,lcat) * gammp(gnu(lcat)+3.,emb1(lcat)/dn1))
+         if (jnmb(8).eq.0) then
+            dmean=1.0e-3
+            do
+               fac1=cx(k,lcat)*gammp(gnu(lcat),dmean/dn1)
+               fac2=rx(k,lcat)*gammp(gnu(lcat)+3.,dmean/dn1)
+               if (fac2/fac1<=emb1(lcat)) exit
+               dmean=dmean-0.1e-4
+               if(dmean<0 .or. dmean.ne.dmean)stop 'cant move cloud to rain, mic_misc line 746'
+            enddo
+            cx(k,2) = cx(k,2) + (cx(k,1)-fac1)
+            rx(k,2) = rx(k,2) + (rx(k,1)-fac2)
+            cx(k,lcat) = fac1
+            rx(k,lcat) = fac2
+         else
+            fac1 = cx(k,lcat) * gammp(gnu(lcat),6.5e-4/dn1)
+            fac2 = rx(k,lcat) * gammp(gnu(lcat)+3.,6.5e-4/dn1)
+            cx(k,8) = cx(k,8) + (cx(k,1)-fac1)
+            rx(k,8) = rx(k,8) + (rx(k,1)-fac2)
+            cx(k,lcat) = fac1
+            rx(k,lcat) = fac2
+         endif
       endif
-         emb(k,lcat) = rx(k,lcat)  &
-         / cx(k,lcat)
+      emb(k,lcat) = rx(k,lcat)  &
+      / cx(k,lcat)
       !   emb(k,lcat) = max(emb0(lcat),min(emb1(lcat),rx(k,lcat)  &
       !     / max(1.e-12,cx(k,lcat))))
       endif
