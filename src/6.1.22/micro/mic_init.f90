@@ -373,6 +373,7 @@ Subroutine reset_ccn (m1,time,rv,k1,k2)
 use micphys
 use rconstants
 use mem_grid, only:zt
+use mem_micro
 
 implicit none
 
@@ -447,9 +448,11 @@ do k = 1,m1
    expected_val = ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
    if (aerocon(k,1) > expected_val) then
       aerocon(k,1) = expected_val
-   endif 
-  
-
+   endif
+  case(9)
+     aerocon(k,1)=0
+   !   aerocon(k,2)=0 
+     micro_g(1)%cifnp = 0
   end select
 
 
