@@ -683,7 +683,7 @@ integer :: m1,k1,k2,lcat,k,lhcat
 real :: embi,parmi,embtemp
 real :: dmean, dn1, fac1, fac2, fac2aero
 real, external :: gammp,gammln
-real, dimension(m1) :: dn0, vapdrizt
+real, dimension(m1) :: dn0
 
 if (jnmb(lcat) == 2) then
    embi = 1. / emb(2,lcat)
@@ -749,7 +749,7 @@ elseif (jnmb(lcat) >= 5) then
 
          ! Lucas 8/1/2022
          ! If Drizzle durned off, use empty vapdrizt array to track liquid mass transfer
-         if(jnmb(8).eq.0) vapdrizt(k) = vapdrizt(k) + (rx(k,1)-fac2)
+         if(jnmb(8).eq.0) xvapdrizt(k) = xvapdrizt(k) + (rx(k,1)-fac2)
 
          ! Lucas 8/1/2022
          ! Move in-cloud CCN 
