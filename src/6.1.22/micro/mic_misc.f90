@@ -211,7 +211,7 @@ if (iccnlev>=2) then
    endif
    !Aerosol masses in cloud
    if (jnmb(1) >= 1) then
-     if (micro%rcp(k,i,j) >= 1.e-12) then
+     if (micro%rcp(k,i,j) >= 0.) then
       cnmhx(k,1) = micro%cnmcp(k,i,j)
       if(itrkepsilon==1) snmhx(k,1) = micro%snmcp(k,i,j)
       if(itrkdust==1)    dnmhx(k,1) = micro%dnmcp(k,i,j)
@@ -220,7 +220,7 @@ if (iccnlev>=2) then
    endif
    !Aerosol masses in rain
    if (jnmb(2) >= 1) then
-     if (micro%rrp(k,i,j) >= 1.e-12) then
+     if (micro%rrp(k,i,j) >= 0.) then
       cnmhx(k,2) = micro%cnmrp(k,i,j)
       if(itrkepsilon==1) snmhx(k,2) = micro%snmrp(k,i,j)
       if(itrkdust==1)    dnmhx(k,2) = micro%dnmrp(k,i,j)
@@ -229,7 +229,7 @@ if (iccnlev>=2) then
    endif
    !Aerosol masses in pristine ice 
    if (jnmb(3) >= 1) then
-     if (micro%rpp(k,i,j) >= 1.e-12) then
+     if (micro%rpp(k,i,j) >= 0.) then
       cnmhx(k,3) = micro%cnmpp(k,i,j)
       if(itrkepsilon==1) snmhx(k,3) = micro%snmpp(k,i,j)
       if(itrkdust==1)    dnmhx(k,3) = micro%dnmpp(k,i,j)
@@ -238,7 +238,7 @@ if (iccnlev>=2) then
    endif
    !Aerosol masses in snow
    if (jnmb(4) >= 1) then
-     if (micro%rsp(k,i,j) >= 1.e-12) then
+     if (micro%rsp(k,i,j) >= 0.) then
       cnmhx(k,4) = micro%cnmsp(k,i,j)
       if(itrkepsilon==1) snmhx(k,4) = micro%snmsp(k,i,j)
       if(itrkdust==1)    dnmhx(k,4) = micro%dnmsp(k,i,j)
@@ -247,7 +247,7 @@ if (iccnlev>=2) then
    endif
    !Aerosol masses in aggregates
    if (jnmb(5) >= 1) then
-     if (micro%rap(k,i,j) >= 1.e-12) then
+     if (micro%rap(k,i,j) >= 0.) then
       cnmhx(k,5) = micro%cnmap(k,i,j)
       if(itrkepsilon==1) snmhx(k,5) = micro%snmap(k,i,j)
       if(itrkdust==1)    dnmhx(k,5) = micro%dnmap(k,i,j)
@@ -256,7 +256,7 @@ if (iccnlev>=2) then
    endif
    !Aerosol masses in graupel
    if (jnmb(6) >= 1) then
-     if (micro%rgp(k,i,j) >= 1.e-12) then
+     if (micro%rgp(k,i,j) >= 0.) then
       cnmhx(k,6) = micro%cnmgp(k,i,j)
       if(itrkepsilon==1) snmhx(k,6) = micro%snmgp(k,i,j)
       if(itrkdust==1)    dnmhx(k,6) = micro%dnmgp(k,i,j)
@@ -265,7 +265,7 @@ if (iccnlev>=2) then
    endif
    !Aerosol masses in hail
    if (jnmb(7) >= 1) then
-     if (micro%rhp(k,i,j) >= 1.e-12) then
+     if (micro%rhp(k,i,j) >= 0.) then
       cnmhx(k,7) = micro%cnmhp(k,i,j)
       if(itrkepsilon==1) snmhx(k,7) = micro%snmhp(k,i,j)
       if(itrkdust==1)    dnmhx(k,7) = micro%dnmhp(k,i,j)
@@ -274,7 +274,7 @@ if (iccnlev>=2) then
    endif
    !Aerosol masses in drizzle
    if (jnmb(8) >= 1) then
-     if (micro%rdp(k,i,j) >= 1.e-12) then
+     if (micro%rdp(k,i,j) >= 0.) then
       cnmhx(k,8) = micro%cnmdp(k,i,j)
       if(itrkepsilon==1) snmhx(k,8) = micro%snmdp(k,i,j)
       if(itrkdust==1)    dnmhx(k,8) = micro%dnmdp(k,i,j)
@@ -681,7 +681,7 @@ implicit none
 
 integer :: m1,k1,k2,lcat,k,lhcat
 real :: embi,parmi,embtemp
-real :: dmean, dn1, fac1, fac2
+real :: dmean, dn1, fac1, fac2, fac2aero
 real, external :: gammp,gammln
 real, dimension(m1) :: dn0
 
@@ -734,14 +734,59 @@ elseif (jnmb(lcat) >= 5) then
         dn1 = dmean * (exp(gammln(gnu(lcat))-gammln(gnu(lcat)+3.))) ** (1./3.)
         !fac1 = min(cx(k,lcat),cx(k,lcat) * gammp(gnu(lcat),emb1(lcat)/dn1))
         !fac2 = min(rx(k,lcat),rx(k,lcat) * gammp(gnu(lcat)+3.,emb1(lcat)/dn1))
-        fac1 = cx(k,lcat) * gammp(gnu(lcat),6.5e-4/dn1)
-        fac2 = rx(k,lcat) * gammp(gnu(lcat)+3.,6.5e-4/dn1)
-        cx(k,8) = cx(k,8) + (cx(k,1)-fac1)
-        rx(k,8) = rx(k,8) + (rx(k,1)-fac2)
-        cx(k,lcat) = fac1
-        rx(k,lcat) = fac2
-        emb(k,lcat) = max(emb0(lcat),min(emb1(lcat),rx(k,lcat)  &
-          / max(1.e-12,cx(k,lcat))))
+      if (dmean>1e-3) then !if mean diam is greater than 1mm, move all cloud to rain
+         if (jnmb(8).eq.0) then
+            cx(k,2) = cx(k,2) + cx(k,1)
+            rx(k,2) = rx(k,2) + rx(k,1)
+            cx(k,lcat) = 0.
+            rx(k,lcat) = 0.
+         else
+            cx(k,8) = cx(k,8) + (cx(k,1)-fac1)
+            rx(k,8) = rx(k,8) + (rx(k,1)-fac2)
+            cx(k,lcat) = fac1
+            rx(k,lcat) = fac2
+         endif
+
+         ! Lucas 8/1/2022
+         ! If Drizzle durned off, use empty vapdrizt array to track liquid mass transfer
+         if(jnmb(8).eq.0) xvapdrizt(k) = xvapdrizt(k) + (rx(k,1)-fac2)
+
+         ! Lucas 8/1/2022
+         ! Move in-cloud CCN 
+         if (iccnlev >=2) then
+            fac2aero = cnmhx(k,1)*gammp(gnu(lcat)+3.,dmean/dn1)
+            cnmhx(k, 2) = (cnmhx(k, 1) - fac2aero)
+            cnmhx(k, 1) = fac2aero
+         endif
+      else
+         !fac1 = min(cx(k,lcat),cx(k,lcat) * gammp(gnu(lcat),emb1(lcat)/dn1))
+         !fac2 = min(rx(k,lcat),rx(k,lcat) * gammp(gnu(lcat)+3.,emb1(lcat)/dn1))
+         if (jnmb(8).eq.0) then
+            dmean=1.0e-3
+            do
+               fac1=cx(k,lcat)*gammp(gnu(lcat),dmean/dn1)
+               fac2=rx(k,lcat)*gammp(gnu(lcat)+3.,dmean/dn1)
+               if (fac2/fac1<=emb1(lcat)) exit
+               dmean=dmean-0.1e-4
+               if(dmean<0 .or. dmean.ne.dmean)stop 'cant move cloud to rain, mic_misc line 746'
+            enddo
+            cx(k,2) = cx(k,2) + (cx(k,1)-fac1)
+            rx(k,2) = rx(k,2) + (rx(k,1)-fac2)
+            cx(k,lcat) = fac1
+            rx(k,lcat) = fac2
+         else
+            fac1 = cx(k,lcat) * gammp(gnu(lcat),6.5e-4/dn1)
+            fac2 = rx(k,lcat) * gammp(gnu(lcat)+3.,6.5e-4/dn1)
+            cx(k,8) = cx(k,8) + (cx(k,1)-fac1)
+            rx(k,8) = rx(k,8) + (rx(k,1)-fac2)
+            cx(k,lcat) = fac1
+            rx(k,lcat) = fac2
+         endif
+      endif
+      emb(k,lcat) = rx(k,lcat)  &
+      / cx(k,lcat)
+      !   emb(k,lcat) = max(emb0(lcat),min(emb1(lcat),rx(k,lcat)  &
+      !     / max(1.e-12,cx(k,lcat))))
       endif
      endif
    enddo
@@ -1641,6 +1686,8 @@ do j = 1,m3
    do lcat = 1,ncat
      do k = 1,m1
        if(jnmb(lcat)>=5 .and. (rx(k,lcat) < 1.e-12 .or. cx(k,lcat) <= 0.0)) then
+         ccnmass = cnmhx(k,lcat)
+         cxloss = cx(k, lcat)
          rx(k,lcat) = 0.
          cx(k,lcat) = 0.
        endif
@@ -1650,6 +1697,14 @@ do j = 1,m3
          !Aerosol and solubility tracking
          if(iccnlev>=2) then
            cnmhx(k,lcat) = 0.
+           if (lcat==1 .or. lcat==2 .or. lcat==8) then
+            micro%regen_aero1_mp(k,i,j) = micro%regen_aero1_mp(k,i,j) + ccnmass
+            micro%regen_aero1_np(k,i,j) = micro%regen_aero1_np(k,i,j) + cxloss
+           else if (iregendust==1) then
+            micro%regen_aero2_mp(k,i,j) = micro%regen_aero2_mp(k,i,j) + ccnmass
+            micro%regen_aero2_np(k,i,j) = micro%regen_aero2_np(k,i,j) + cxloss
+           endif
+       
            if(itrkepsilon==1) snmhx(k,lcat) = 0.
            if(itrkdust==1)    dnmhx(k,lcat) = 0.
            if(itrkdustifn==1) dinhx(k,lcat) = 0.

@@ -38,7 +38,7 @@ character(len=*) :: group,vr,cc
 real :: ff
 integer :: ii,nv
 integer :: inrflg
-integer, parameter ::nvgrid=39,nvstrt=83,nvindat=118,nvsound=10
+integer, parameter ::nvgrid=39,nvstrt=83,nvindat=123,nvsound=10
 integer ::  igrids(nvgrid),istart(nvstrt),iindat(nvindat),isound(nvsound)
 character(len=16) :: grids(nvgrid),start(nvstrt),indat(nvindat),sound(nvsound)
 data igrids/nvgrid*0/,istart/nvstrt*0/,iindat/nvindat*0/,isound/nvsound*0/
@@ -80,10 +80,12 @@ DATA INDAT/  &
      ,'IMBUDGET','IRIME','IPLAWS','ISEDIM','ICLOUD','IDRIZ','IRAIN'       &
      ,'IPRIS','ISNOW','IAGGR','IGRAUP','IHAIL','CPARM','DPARM','RPARM'    &
      ,'PPARM','SPARM','APARM','GPARM','HPARM','GNU','IAEROSOL','ISALT'    &
-     ,'IDUST','ICCNLEV','IFORCECCN','BLH','FCCNTS','FCCNSTART'             &
+     ,'IDUST', 'IREGENDUST', 'ICCNLEV','IFORCECCN','BLH','FCCNTS','FCCNSTART'             &
      ,'IIFN','IAERORAD','IAERODEP','IAEROPRNT'          &
      ,'IAEROHIST','CIN_MAX','CCN_MAX','GCCN_MAX','DUST1_MAX','DUST2_MAX'  &
+     ,'DUST1_MAX_BL', 'DUST1_MAX_FT' &
      ,'SALTF_MAX','SALTJ_MAX','SALTS_MAX','IAEROLBC','ICO2LBC','BCTAU'    &
+     ,'SALTF_MAX_BL','SALTF_MAX_FT' &
      ,'IAERO_CHEM','AERO_EPSILON','AERO_MEDRAD','ITRKEPSILON','ITRKDUST'  &
      ,'ITRKDUSTIFN'/
 DATA SOUND/  &
@@ -340,8 +342,9 @@ IF(GROUP.EQ.'$MODEL_OPTIONS') THEN
  IF(VR.EQ.'HPARM')        CALL varsetf (VR,HPARM,NV,1,FF,0.,1.E5)
  IF(VR.EQ.'GNU')          CALL varsetf (VR,GNU(NV),NV,8,FF,0.,20.)
  IF(VR.EQ.'IAEROSOL')     CALL varseti (VR,IAEROSOL,NV,1,II,0,1)
- IF(VR.EQ.'ISALT')        CALL varseti (VR,ISALT,NV,1,II,0,2)
- IF(VR.EQ.'IDUST')        CALL varseti (VR,IDUST,NV,1,II,0,2)
+ IF(VR.EQ.'ISALT')        CALL varseti (VR,ISALT,NV,1,II,0,3)
+ IF(VR.EQ.'IDUST')        CALL varseti (VR,IDUST,NV,1,II,0,3)
+ IF(VR.EQ.'IREGENDUST')   CALL varseti (VR,IREGENDUST,NV,1,II,0,1)
  IF(VR.EQ.'ICCNLEV')      CALL varseti (VR,ICCNLEV,NV,1,II,0,3)
  IF(VR.EQ.'IFORCECCN')    CALL varseti (VR,IFORCECCN,NV,1,II,0,20)
  IF(VR.EQ.'BLH')          CALL varsetf (VR,BLH,NV,1,FF,0.,1.E4)
@@ -357,7 +360,11 @@ IF(GROUP.EQ.'$MODEL_OPTIONS') THEN
  IF(VR.EQ.'GCCN_MAX')     CALL varsetf (VR,GCCN_MAX,NV,1,FF,0.,1.E4)
  IF(VR.EQ.'DUST1_MAX')    CALL varsetf (VR,DUST1_MAX,NV,1,FF,0.,1.E4)
  IF(VR.EQ.'DUST2_MAX')    CALL varsetf (VR,DUST2_MAX,NV,1,FF,0.,1.E4)
+ IF(VR.EQ.'DUST1_MAX_BL') CALL varsetf (VR,DUST1_MAX_BL,NV,1,FF,0.,1.E4)
+ IF(VR.EQ.'DUST1_MAX_FT') CALL varsetf (VR,DUST1_MAX_FT,NV,1,FF,0.,1.E4)
  IF(VR.EQ.'SALTF_MAX')    CALL varsetf (VR,SALTF_MAX,NV,1,FF,0.,1.E4)
+ IF(VR.EQ.'SALTF_MAX_BL') CALL varsetf (VR,SALTF_MAX_BL,NV,1,FF,0.,1.E4)
+ IF(VR.EQ.'SALTF_MAX_FT') CALL varsetf (VR,SALTF_MAX_FT,NV,1,FF,0.,1.E6)
  IF(VR.EQ.'SALTJ_MAX')    CALL varsetf (VR,SALTJ_MAX,NV,1,FF,0.,1.E4)
  IF(VR.EQ.'SALTS_MAX')    CALL varsetf (VR,SALTS_MAX,NV,1,FF,0.,1.E4)
  IF(VR.EQ.'IAEROLBC')     CALL varseti (VR,IAEROLBC(NV),NV,MAXGRDS,II,0,1)
@@ -522,7 +529,8 @@ WRITE(6,'(100(3(A19,I5)/))')         &
  ,'ITSFLG=',ITSFLG                   &
  ,'IRTSFLG=',IRTSFLG                 &
  ,'IUSFLG=',IUSFLG                   &
- ,'IMPL=',IMPL
+ ,'IMPL=',IMPL                       &
+ ,'IREGENDUST=',IREGENDUST
 
 PRINT*, ' '
 WRITE(6,*)'Non-grid-dependent Floats:'
@@ -573,9 +581,13 @@ WRITE(6,'(100(3(A15,E11.4)/))')      &
  ,'GCCN_MAX=',GCCN_MAX               &
  ,'DUST1_MAX=',DUST1_MAX             &
  ,'DUST2_MAX=',DUST2_MAX             &
+ ,'DUST1_MAX_BL=', DUST1_MAX_BL      &
+ ,'DUST1_MAX_FT=', DUST1_MAX_FT      &
  ,'SALTF_MAX=',SALTF_MAX             &
  ,'SALTJ_MAX=',SALTJ_MAX             &
  ,'SALTS_MAX=',SALTS_MAX             &
+ ,'SALTF_MAX_BL=',SALTF_MAX_BL       &
+ ,'SALTF_MAX_FT=',SALTF_MAX_FT       &
  ,'BLH=',BLH                         &
  ,'FCCNTS=',FCCNTS                   &
  ,'FCCNSTART=',FCCNSTART             &

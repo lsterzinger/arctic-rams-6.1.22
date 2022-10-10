@@ -378,7 +378,7 @@ use mem_micro
 implicit none
 
 integer :: k,m1,k1,k2
-real :: ccn_maxt,time
+real :: ccn_maxt,time,salt_maxt
 real, dimension(m1) :: rv
 real :: expected_val
 
@@ -388,6 +388,7 @@ real :: expected_val
 
 !Convert RAMSIN #/mg to #/kg
 ccn_maxt = ccn_max * 1.e6 
+salt_maxt = saltf_max * 1.e6
 
 !decay timescale
 !fccnts = 28800. !8 hours
@@ -453,6 +454,8 @@ do k = 1,m1
    !   aerocon(k,2)=0 
      micro_g(1)%cifnp = 0
   end select
+
+
 
 
   ! case(5) !decrease bottom BL layer, reset FT
@@ -546,7 +549,7 @@ implicit none
 
 integer :: n1,n2,n3,i,j,k,ifm
 real, dimension(n1,n2,n3) :: md1np,md2np,md1mp,md2mp
-real :: dust1_maxt,dust2_maxt
+real :: dust1_maxt,dust2_maxt,dust1_maxt_bl,dust1_maxt_ft
 
 ! Initialize Dust
 if(iaeroprnt==1 .and. print_msg) then
@@ -559,6 +562,9 @@ endif
  dust1_maxt = dust1_max * 1.e6
  dust2_maxt = dust2_max * 1.e6  
 
+ dust1_maxt_bl = dust1_max_bl * 1.e6
+ dust1_maxt_ft = dust1_max_ft * 1.e6
+
 do j = 1,n3
  do i = 1,n2
   do k = 1,n1
@@ -566,13 +572,17 @@ do j = 1,n3
    !If not using dust source model
    if(idust == 1) then
      !Set up concentration of SMALL MODE Mineral Dust (#/kg)
-     if(k<=2) md1np(k,i,j)=dust1_maxt
-     if(k>2)  md1np(k,i,j)=dust1_maxt*exp(-zt(k)/7000.)
-     !Set up concentration of LARGE MODE Mineral Dust (#/kg)
-     if(k<=2) md2np(k,i,j)=dust2_maxt
-     if(k>2)  md2np(k,i,j)=dust2_maxt*exp(-zt(k)/7000.)
+   !   if(k<=2) md1np(k,i,j)=dust1_maxt
+   !   if(k>2)  md1np(k,i,j)=dust1_maxt*exp(-zt(k)/7000.)
+   !   !Set up concentration of LARGE MODE Mineral Dust (#/kg)
+   !   if(k<=2) md2np(k,i,j)=dust2_maxt
+   !   if(k>2)  md2np(k,i,j)=dust2_maxt*exp(-zt(k)/7000.)
+      md1np(k,i,j)=dust1_maxt
+      md2np(k,i,j)=dust1_maxt
 
-     !Set up Field of SMALL MODE DUST mass (kg/kg)
+
+
+      !Set up Field of SMALL MODE DUST mass (kg/kg)
      md1mp(k,i,j) = ((aero_medrad(3)*aero_rg2rm(3))**3.) &
                     *md1np(k,i,j)/(0.23873/aero_rhosol(3))
      !Set up Field of LARGE MODE DUST mass (kg/kg)
@@ -585,7 +595,16 @@ do j = 1,n3
      md2np(k,i,j) = 0.
      md1mp(k,i,j) = 0.
      md2mp(k,i,j) = 0.
-   endif
+
+   elseif(idust == 3) then
+      !Above/below inversion concentration will go here
+      if(zt(k)<=blh) md1np(k,i,j)=dust1_maxt_bl
+      if(zt(k)>blh) md1np(k,i,j)=dust1_maxt_ft
+
+      !Set up Field of SMALL MODE DUST mass (kg/kg)
+      md1mp(k,i,j) = ((aero_medrad(3)*aero_rg2rm(3))**3.) &
+      *md1np(k,i,j)/(0.23873/aero_rhosol(3))
+endif
 
    !Output sample initial profile
    if(iaeroprnt==1 .and. print_msg .and. i==1 .and. j==1) then
@@ -614,7 +633,7 @@ implicit none
 integer :: n1,n2,n3,i,j,k,ifm
 real, dimension(n1,n2,n3) :: salt_film_np,salt_jet_np,salt_spum_np
 real, dimension(n1,n2,n3) :: salt_film_mp,salt_jet_mp,salt_spum_mp
-real :: saltf_maxt,saltj_maxt,salts_maxt
+real :: saltf_maxt,saltj_maxt,salts_maxt,saltf_maxt_bl,saltf_maxt_ft
 
 ! Initialize Sea-salt
 if(iaeroprnt==1 .and. print_msg) then
@@ -628,6 +647,9 @@ endif
  saltj_maxt = saltj_max * 1.e6
  salts_maxt = salts_max * 1.e6
 
+ saltf_maxt_bl = saltf_max_bl * 1e6
+ saltf_maxt_ft = saltf_max_ft * 1e6
+ 
 do j = 1,n3
  do i = 1,n2
   do k = 1,n1
@@ -635,14 +657,19 @@ do j = 1,n3
    !If not using dust source model
    if(isalt == 1) then
      !Set up concentration of FILM MODE SALT (#/kg)
-     if(k<=2) salt_film_np(k,i,j)=saltf_maxt
-     if(k>2)  salt_film_np(k,i,j)=saltf_maxt*exp(-zt(k)/7000.)
+   !   if(k<=2) salt_film_np(k,i,j)=saltf_maxt
+   !   if(k<=2) salt_film_np(k,i,j)=saltf_maxt
+     salt_film_np(k,i,j)=saltf_maxt
+
      !Set up concentration of JET MODE Mineral Dust (#/kg)
-     if(k<=2) salt_jet_np(k,i,j)=saltj_maxt
-     if(k>2)  salt_jet_np(k,i,j)=saltj_maxt*exp(-zt(k)/7000.)
+   !   if(k<=2) salt_jet_np(k,i,j)=saltj_maxt
+   !   if(k>2)  salt_jet_np(k,i,j)=saltj_maxt*exp(-zt(k)/7000.)
+     salt_jet_np(k,i,j)=saltj_maxt
+
      !Set up concentration of SPUME MODE Mineral Dust (#/kg)
-     if(k<=2) salt_spum_np(k,i,j)=salts_maxt
-     if(k>2)  salt_spum_np(k,i,j)=salts_maxt*exp(-zt(k)/7000.)
+   !   if(k<=2) salt_spum_np(k,i,j)=salts_maxt
+   !   if(k>2)  salt_spum_np(k,i,j)=salts_maxt*exp(-zt(k)/7000.)
+     salt_spum_np(k,i,j)=salts_maxt
 
      !Set up 3D Field of FILM MODE SALT mass (kg/kg)
      salt_film_mp(k,i,j) = ((aero_medrad(5)*aero_rg2rm(5))**3.) &
@@ -662,6 +689,16 @@ do j = 1,n3
      salt_film_mp(k,i,j) = 0.
      salt_jet_mp(k,i,j)  = 0.
      salt_spum_mp(k,i,j) = 0.
+
+   elseif(isalt == 3) then
+      ! Above/below inversion concentrations go here
+      ! if((i.eq.1).and.(j.eq.1)) print *, "Different above/below cloud salt", saltf_maxt_bl, saltf_maxt_ft, blh
+      if(zt(k)<=blh) salt_film_np(k,i,j) = saltf_maxt_bl
+      if(zt(k)>blh) salt_film_np(k,i,j) = saltf_maxt_ft
+
+      !Set up 3D Field of FILM MODE SALT mass (kg/kg)
+      salt_film_mp(k,i,j) = ((aero_medrad(5)*aero_rg2rm(5))**3.) &
+      *salt_film_np(k,i,j)/(0.23873/aero_rhosol(5))
    endif
 
    !Output initial sample profile

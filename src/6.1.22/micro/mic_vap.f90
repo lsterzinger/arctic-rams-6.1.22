@@ -312,9 +312,13 @@ do k = k1,k2
 
    !Aerosol and solubility tracking
    if(iccnlev>=2 .and. vap(k,lcat)<0.0 .and. rxferratio > .0001 .and. &
-       cxloss > 0.0 .and. cnmhx(k,lcat) > 0.0) then
+       cxloss > 0.0 .and. (cnmhx(k,lcat) > 0.0 .or. dinhx(k, lcat) > 0.0)) then
+   
      ccnmass = cnmhx(k,lcat) * rxferratio
      cnmhx(k,lcat) = cnmhx(k,lcat) - ccnmass
+
+     dustmass = dinhx(k,lcat) * rxferratio
+     dinhx(k,lcat) = dinhx(k,lcat) - dustmass
 
      !For approximation, test rg based on regenerated aerosol
    !   acat=8 
@@ -324,9 +328,19 @@ do k = k1,k2
    !   else
    !     acat=8
    !   endif
-     acat=1
-     aeromas(k,acat) = aeromas(k,acat) + ccnmass
-     aerocon(k,acat) = aerocon(k,acat) + cxloss
+
+     ! if not a liquid hydrometeor, release aerosol to acat 8
+     if (lcat.eq.1 .or. lcat.eq.2 .or.  lcat.eq.8) then
+      acat = 8
+      aeromas(k,acat) = aeromas(k,acat) + ccnmass
+      aerocon(k,acat) = aerocon(k,acat) + cxloss
+     else if (iregendust == 1) then
+      acat=9
+      aeromas(k,acat) = aeromas(k,acat) + ccnmass
+      aerocon(k,acat) = aerocon(k,acat) + cxloss
+
+      ifnnucx(k) = ifnnucx(k) - cxloss
+     endif
 
      if(itrkepsilon==1)then
       scnmass = snmhx(k,lcat) * rxferratio
@@ -340,6 +354,8 @@ do k = k1,k2
      if(itrkdustifn==1)then
       dinmass = dinhx(k,lcat) * rxferratio
       dinhx(k,lcat) = dinhx(k,lcat) - dinmass
+      ! aeromas(k, 8) = aeromas(k, 8) + dinmass
+      ! aerocon(k, 8) = aerocon(k, 8) + cxloss
      endif
    endif
 

@@ -260,9 +260,9 @@ else
 endif
 
 !Adele - If doing restart from CCNLEV=0, deplete particles
-if (time .eq. fccnstart .and. iccnlev == 2) then
- CALL remove_aero_init(dn0(1),m1,i,j)
-endif
+! if (time .eq. fccnstart .and. iccnlev == 2) then
+!  CALL remove_aero_init(dn0(1),m1,i,j)
+! endif
 
 ! Compute pressure, temperature, and moisture for vapor diffusion
  CALL thrmstr (m1,k1,k2,pp(1),thp(1),theta(1),pi0(1),rtp(1),rv(1))

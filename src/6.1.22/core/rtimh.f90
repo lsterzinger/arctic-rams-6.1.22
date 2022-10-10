@@ -24,12 +24,20 @@ use mem_cuparm
 use mem_varinit
 use mem_turb
 use mem_oda,   only:if_oda
-use micphys,   only:level,icheckmic,itempnudge,iforceccn,fccnstart
+use micphys,   only:level,icheckmic,itempnudge,iforceccn,fccnstart,iccnlev
 use mem_grid
 
 implicit none
 
 integer :: callmassflux,massfluxfreq
+
+if(iforceccn.eq.9) then
+   if(time.lt.fccnstart) then
+      iccnlev=0
+   else
+      iccnlev=2
+   endif 
+endif
 
  CALL acctimes ('INIT')
 
