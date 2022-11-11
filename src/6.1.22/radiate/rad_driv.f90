@@ -831,12 +831,13 @@ Subroutine radcalc3 (m1,maxnzp,mcat,iswrtyp,ilwrtyp  &
 use rconstants
 use rrad3
 use micphys
+use mem_grid, only: time
 
 implicit none
 
 integer m1,maxnzp,mcat,ngrid
 integer :: iswrtyp,ilwrtyp
-integer i,j,k
+integer i,j,k,ii,printsound
 integer, save :: ncall = 0,nradmax
 integer, save :: ngass(mg)=(/1, 1, 1/),ngast(mg)=(/1, 1, 1/)
 !     one can choose the gases of importance here,
@@ -887,6 +888,19 @@ nrad = m1 - 1 + narad
    ,prsnz,prsnzp,glat,rtgt,topt,rlongup  &
    ,zm,zt,press,tair,dn0,rv,zml,ztl,pl,tl,dl,rl,o3l,dzl)
 
+printsound = 0
+! print *, "THE TIME IS " , time
+! Routine to print radiation sounding from gridbox 10,10
+! Lucas Sterzinger 2022-11-11
+if(time.eq.0.and.i.eq.10.and.j.eq.10.and.printsound.eq.1) then
+   ! print *, "Running on ", time,
+   OPEN(UNIT=3333, FILE='tl.txt', status ='replace', form='formatted')
+   123 Format(f12.3, ',', f12.3, ',', e14.1,','f12.3,','f12.3)
+   do ii=0,size(tl)
+      write (3333, 123) ztl(ii), tl(ii), rl(ii), pl(ii), dl(ii)
+   enddo
+   stop
+endif
 ! calculate non-dimensional pressure
 do k=1,m1
   exner(k) = (pi0(k)+pp(k))/cp

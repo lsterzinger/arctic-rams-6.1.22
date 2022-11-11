@@ -28,8 +28,10 @@ integer :: iaction,m1,k,lv,lf,lats,latn,lat  &
    ,isummer,iwinter,is,ind,index,ilev,ifld
 integer, dimension(11) :: latind
 
+integer :: lindec, imin, const
+
 real :: prsnz,prsnzp,glat,rtgt,topt,rlongup,rgasog,deltap  &
-   ,wtnorth,wtsouth,wt,fjday,wtjul,wtjan
+   ,wtnorth,wtsouth,wt,fjday,wtjul,wtjan,tltemp,tlmin,dtdz,drdz
 real, dimension(m1) :: zm,zt,press,tair,dn0,rv
 real, dimension(nrad) ::   zml,ztl,pl,tl,dl,rl,o3l,dzl
 real, dimension(33,9,6) :: mcdat,mclat
@@ -519,6 +521,29 @@ elseif (iaction .eq. 3) then
 ! to added levels.
 
    lv = 1
+   lindec = 0 !linear decrease flag
+   const = 1 !constant with height flag
+
+   ! Find mininum temperature and height index, used to 
+   ! calculate dt/dz and dr/dz for linear decrease with height
+   ! Note: Not working since water vapor doesn't scale linearly
+   ! with temperature
+   ! Lucas Sterzinger 2022-11-11 
+   if(lindec.eq.1) then
+      tlmin = mcol(1,3)
+      do k = 1,33
+         if(mcol(k, 3).lt.tlmin) then
+            imin = k
+            tlmin = mcol(k,3)
+         endif
+         if(mcol(k,1).gt.30000) exit
+      enddo
+      ! Calculate dt/dz in K/m
+      ! dtdz = (tl(m1-1) - tlmin) / (ztl(m1-1) - mcol(imin, 1)) 
+      dtdz = -0.004
+      drdz = (rl(m1-1) - mcol(imin, 4)) / (ztl(m1-1) - mcol(imin, 1)) 
+   endif
+   ! print *, "Min temperature ", tlmin, "found at level ", imin, "which is ", mcol(imin,1), "m" 
    do k = 1,nrad
 30       continue
       if (pl(k) .gt. mcol(1,2)) then
@@ -532,8 +557,29 @@ elseif (iaction .eq. 3) then
          wt = (pl(k) - mcol(lv,2)) / (mcol(lv+1,2) - mcol(lv,2))
          o3l(k) = mcol(lv,5) + (mcol(lv+1,5) - mcol(lv,5)) * wt
          if (k .ge. m1) then
-            tl(k) = mcol(lv,3) + (mcol(lv+1,3) - mcol(lv,3)) * wt
-            rl(k) = mcol(lv,4) + (mcol(lv+1,4) - mcol(lv,4)) * wt
+
+            ! If we're lower than the min lv then linearly decrease
+            ! Not working (see note above)
+            ! Lucas Sterzinger 2022-11-11
+            if (lv.lt.imin.and.lindec.eq.1) then
+               tl(k) = tl(k-1) + dtdz * (ztl(k)-ztl(k-1))
+               ! rl(k) = rl(k-1) + drdz * (ztl(k)-ztl(k-1))
+               if(rl(k-1).lt.(mcol(lv,4) + (mcol(lv+1,4) - mcol(lv,4)) * wt)) then
+                  rl(k) = rl(k-1)
+               else
+                  rl(k) = mcol(lv,4) + (mcol(lv+1,4) - mcol(lv,4)) * wt
+                  ! print *, "Adjusting temp",   ztl(k), tl(k-1), tl(k)
+               endif
+            
+            ! If we're not linearly decrease, check to see if we want to hold values constant with height
+            ! until intercepted by the mclatchy sounding (by setting const = 1)
+            elseif(const.eq.1.and. tl(k-1) .lt. (mcol(lv,3) + (mcol(lv+1,3) - mcol(lv,3)) * wt)) then
+               tl(k) = tl(k-1)
+               rl(k) = rl(k-1)
+            else
+               tl(k) = mcol(lv,3) + (mcol(lv+1,3) - mcol(lv,3)) * wt
+               rl(k) = mcol(lv,4) + (mcol(lv+1,4) - mcol(lv,4)) * wt
+            endif
             dl(k) = mcol(lv,6) + (mcol(lv+1,6) - mcol(lv,6)) * wt
          endif
       elseif (pl(k) .lt. mcol(33,2)) then
