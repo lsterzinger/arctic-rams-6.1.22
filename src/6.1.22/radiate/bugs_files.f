@@ -967,7 +967,7 @@ c-----------------------------------------------------------------------
                xm = 2.*pi*rm/xlam(ib)
                cm = cmplx(cnr,-cni)
 
-               if (ib .eq. 1) then
+               if (ib .eq. 1 .or. ib .eq. 2) then
                   !For band 1 (0.5 um) only compute the extinction.
                   um = 2.*xm*(cnr-1.)*cmplx(0.d0,1.d0)
                   ext = c0 + 2.*c1*real(p0/(um*(um+1.)**p1)
@@ -1000,6 +1000,12 @@ c-----------------------------------------------------------------------
                       stop
                  endif
                endif
+!               if(flag) then
+!        if(ib==2) print*,ib,tcld(i,l),wcld(i,l),rm,xlam(ib),re(i,l),p2
+!        if(ib==2) print*,um,xm,cm,ext,c0,c1,p0,p1,area,vm
+!                else
+!               !if(ib<=8) print*,ib,tcld(i,l),wcld(i,l)
+!               endif
                asycld(i,l)=0.85  !default, overridden in bugs_swr(), bugs_lwr()
              endif
          enddo
