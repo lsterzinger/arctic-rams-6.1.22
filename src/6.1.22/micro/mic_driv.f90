@@ -298,6 +298,23 @@ if (iswrtyp .eq. 3 .or. ilwrtyp .eq. 3) then
    endif
 endif
 
+if (iswrtyp .eq. 4 .or. ilwrtyp .eq. 4) then
+   if (mod(time + .001,radfrq) .lt. dtlt .or. time .lt. .001) then
+      !Saleeby(2008): Change passing of 7 to 8 if adding drizzle mode
+      ! and modify locations in radcalc3 and radcomp3 to match
+print*,'calling radcalc4'
+      CALL radcalc4 (m1,maxnzp,7,iswrtyp,ilwrtyp  &
+         ,glat,rtgt,topt  &
+         ,radiate%albedt  (i,j) ,radiate%cosz  (i,j)  &
+         ,radiate%rlongup (i,j) ,radiate%rshort(i,j)  &
+         ,radiate%rlong   (i,j)  &
+         ,zm,zt,rv(1),dn0(1),pi0(1),pp(1),radiate%fthrd(1,i,j),i,j,ngr &
+         !Saleeby(2011): Variables for the radiatively active aerosol
+         ,radiate%bext(1,i,j),radiate%swup(1,i,j),radiate%swdn(1,i,j) &
+         ,radiate%lwup(1,i,j),radiate%lwdn(1,i,j))
+   endif
+endif
+
 ! Save rx and qx before vapor diffusion...
 rx_lhr = rx
 qx_lhr = qx
