@@ -113,6 +113,20 @@ OBJ = $(ARC)($(MODEL)/lib/an_header.o) \
       $(ARC)($(MODEL)/radiate/rad_ccmp.o) \
       $(ARC)($(MODEL)/radiate/rad_stable.o) \
       $(ARC)($(MODEL)/radiate/rrad2.o) \
+      $(ARC)($(MODEL)/radiate/kinds.o) \
+      $(ARC)($(MODEL)/radiate/bugsrad_physconst.o) \
+      $(ARC)($(MODEL)/radiate/bugsrad_planck.o) \
+      $(ARC)($(MODEL)/radiate/cloud_correlate.o) \
+      $(ARC)($(MODEL)/radiate/continuum.o) \
+      $(ARC)($(MODEL)/radiate/gases_ckd.o) \
+      $(ARC)($(MODEL)/radiate/newexp.o) \
+      $(ARC)($(MODEL)/radiate/rayle.o) \
+      $(ARC)($(MODEL)/radiate/two_rt_lw_ocastrndm.o) \
+      $(ARC)($(MODEL)/radiate/two_rt_sw_ocastrndm.o) \
+      $(ARC)($(MODEL)/radiate/bandsolve.o) \
+      $(ARC)($(MODEL)/radiate/bugs_rad.o) \
+      $(ARC)($(MODEL)/radiate/bugs_files.o) \
+      $(ARC)($(MODEL)/radiate/driver_read.o) \
       $(ARC)($(MODEL)/micro/mic_aero.o) \
       $(ARC)($(MODEL)/micro/mic_init.o) \
       $(ARC)($(MODEL)/micro/mic_coll.o) \
