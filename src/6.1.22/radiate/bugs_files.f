@@ -243,7 +243,6 @@
       rew(:,:) = 6.e6*(cwrho/cwn*0.0019894e-6)**(1./3.)
       rei(:,:)    = 30.
 
-!      open(144,file="radout.txt")
       do l = 1, nlm
          do i = 1, ncol
             ttem(i,l) = min(tmax,tt(i,l))
@@ -285,13 +284,6 @@
      +,           asycldw , .false.
      +           )
 
-!	 write(144,*) cwrho(1,:)
-!	 write(144,*) cwn(1,:)
-!         write(144,*) rew(1,:)
-!	 write(144,*) tcldw(1,:)
-!	 write(144,*) wcldw(1,:)
-!	 write(144,*) asycldw(1,:)
-
          call cloudg
      +           (   ncol ,   nlm   ,    mb ,    ib
      +,                pp ,    tt   , cirho ,   rei
@@ -331,10 +323,8 @@
      +,              asym ,  asyclr , fwcld ,   fwclr
      +           )
            
-!	   write(144,*) tgm(1,:)
 !---- loop over the k-probability distributions starts here:
 
-      print*,'end writing'
          do ig = 1, kg(ibmbs)
 
 !---- 1.5 gaseous absorption:
@@ -967,7 +957,7 @@ c-----------------------------------------------------------------------
       do l = 1, nlm
          do i = 1, ncol 
             if(wcont(i,l) .gt. eps) then
-               dz=10.!29.286*log(pp(i,l+1)/pp(i,l)) * tt(i,l)
+               dz=29.286*log(pp(i,l+1)/pp(i,l)) * tt(i,l)
                rm = re(i,l)/p2
                no = wcont(i,l) / ( (4.*pi/3.)*f3*rho_water*rm**3 )  !Particles per cubic micrometer
                area = pi*f2*no*rm**2*1.0e6                          !The factor converts inverse micrometers,
@@ -997,11 +987,9 @@ c-----------------------------------------------------------------------
 !     +              p0/(dble(vm)*(dble(vm)+1.)**dble(p1))
 !     +            + 1./(dble(vm)**2*(dble(vm)+1.)**dble(p0))
 !     +            - 1./dble(vm)**2)
-		 !ext=0.3/dz   !Adele - testing
                  tcld(i,l) = ext*dz
 
                  if (ext.lt.abs) ext = abs
-                 !wcld(i,l) = 0.6!Adele - testing
                  wcld(i,l) = (ext-abs)/ext
 
                  if(wcld(i,l) .lt. 0.) then

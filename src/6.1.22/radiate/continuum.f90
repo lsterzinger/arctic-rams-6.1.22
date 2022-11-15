@@ -166,12 +166,15 @@ subroutine gascon                &
  
    tgm(:,:) = 0. 
    if( iflb(ib) .eq. 0) return
+
+!   print*,'nlm in continuum',nlm
    do i = 1, ncol
       do l = 1, nlm
          if(rmix(i,l).gt.0.0) then
             ! The factor of 10 converts hPa to Pa and kg/m^2 to g/cm^2
             amnt     = 10._dbl_kind*dp(i,l)*rmix(i,l)/gravity
             patm     = ppl(i,l) /1013.25_dbl_kind
+!   print*,'in loop',i,l,tt(i,l),rmix(i,l),f_virt
             tv       = tt(i,l)*(1._dbl_kind + f_virt*rmix(i,l))
             dz       = (R_d/gravity)*tv*log(pp(i,l+1)/pp(i,l))* &
                           0.001_dbl_kind

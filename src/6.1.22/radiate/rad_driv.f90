@@ -1589,7 +1589,7 @@ real :: exner(m1) ! non-dimensional pressure
 real :: relh(m1)
 real, external :: rslf
 
-print*,'inside radcalc4'
+!print*,'inside radcalc4'
 if (ncall == 0) then
    ncall = 1
    nradmax = maxnzp + namax
@@ -1607,8 +1607,11 @@ nrad = m1 - 1 + narad
    ,prsnz,prsnzp,glat,rtgt,topt,rlongup  &
    ,zm,zt,press,tair,dn0,rv,zml,ztl,pl,tl,dl,rl,o3l,dzl)
 
-print*,tl(1:5)
-print*,rl(1:5)
+!print*,'nrad',nrad
+!print*,tl(1:5)
+!print*,rl(1:5)
+
+CALL cloud_prep (m1,i,j,ngrid,dn0(1))
 
 rcl(1:m1)=rx(1:m1,1)
 ncl(1:m1)=cx(1:m1,1)
@@ -1621,7 +1624,7 @@ rrl(m1:nrad)=0.
 ril(m1:nrad)=0.
 rsl(m1:nrad)=0.
 
-print*,rcl(1:5)
+!print*,rcl(1:5)
 
 !printsound = 0
 ! print *, "THE TIME IS " , time
@@ -1665,15 +1668,36 @@ enddo
 CALL azero2 (nrad,fthsw,fthlw)
 CALL azero2 (nrad,flxus,flxds)
 CALL azero2 (nrad,flxul,flxdl)
-print*,'alling bugs_driver'
+!print*,'alling bugs_driver'
+!print*,nrad
+!print*,cosz
+!print*,albedt
+!print*,pl(1:nrad)
+!print*,tl(1:nrad)
+!print*,rl(1:nrad)
+!print*,rcl(1:nrad)
+!print*,ncl(1:nrad)
+!print*,ril(1:nrad)
+!print*,rrl(1:nrad)
+!print*,rsl(1:nrad)
+!print*,o3l(1:nrad)
+!print*,fthsw(1:nrad)
+!print*,fthlw(1:nrad)
+!print*,flxus(1:nrad)
+!print*,flxds(1:nrad)
+!print*,flxul(1:nrad)
+!print*,flxdl(1:nrad)
 CALL bugs_driver(nrad,cosz,albedt,pl(1:nrad),tl(1:nrad),rl(1:nrad),rcl(1:nrad) &
                  ,ncl(1:nrad),ril(1:nrad),rrl(1:nrad),rsl(1:nrad),o3l(1:nrad) &
                  ,fthsw(1:nrad),fthlw(1:nrad),flxus(1:nrad),flxds(1:nrad) &
                  ,flxul(1:nrad),flxdl(1:nrad))
 
-do k = 2,m1-1
+!print*,'rlongup',rlongup
+!print*,flxul(1)
+
+do k = 1,m1!2,m1-1
    !divide by exner to get potential temp heating rate
-   fthrd(k) = fthrd(k) + (fthsw(k)+fthlw(k))/(cp * exner(k))
+   fthrd(k) = fthrd(k) + (fthsw(k)+fthlw(k))/exner(k)
    swup(k) = flxus(k)
    swdn(k) = flxds(k)
 
@@ -1683,18 +1707,18 @@ enddo
 
 rshort = flxds(1)
 !lower and upper boundary conditions on swup and swdn
-swup(1) = flxus(1)
-swup(m1) = flxus(nrad) ! use the top radiation value rather than m1 value here
-swdn(1) = flxds(1)
-swdn(m1) = flxds(nrad) ! use the top radiation value rather than m1 value here
+!swup(1) = flxus(1)
+!swup(m1) = flxus(nrad) ! use the top radiation value rather than m1 value here
+!swdn(1) = flxds(1)
+!swdn(m1) = flxds(nrad) ! use the top radiation value rather than m1 value here
 
 rlong = flxdl(1)
 
 !lower and upper boundary conditions on lwup and lwdn
-lwup(1) = flxul(1)
-lwup(m1) = flxul(nrad) ! use the top radiation value rather than m1 value here
-lwdn(1) = flxdl(1)
-lwdn(m1) = flxdl(nrad) ! use the top radiation value rather than m1 value here
+!lwup(1) = flxul(1)
+!lwup(m1) = flxul(nrad) ! use the top radiation value rather than m1 value here
+!lwdn(1) = flxdl(1)
+!lwdn(m1) = flxdl(nrad) ! use the top radiation value rather than m1 value here
 
 !not integrated with BUGSrad yet. just diagnostic anyway
 bext(:)=0.

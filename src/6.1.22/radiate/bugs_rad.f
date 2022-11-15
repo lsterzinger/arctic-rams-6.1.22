@@ -233,7 +233,7 @@
 
 
 !-----------------------------------------------------------------------
-      print*,'---- enter subroutine bugs_rad:'
+      !print*,'---- enter subroutine bugs_rad:'
 
 !---- 1.0 initialization of output variables and arrays:
 
@@ -269,7 +269,7 @@
 
 
 !---- 1.1 initialization of local scalars
-      print*,'loc1'
+      !print*,'loc1'
 
       cvs_version1 =
      & "Version:$Id: bugs_rad.F,v 1.7 2003/11/12 20:37:49 norm Exp $"
@@ -282,7 +282,7 @@
       heat_fac = grav*0.01/cp
 
 !---- 1.2 initialization of local arrays
-      print*,'loc2'
+      !print*,'loc2'
 
       ts_loc(:)          = ts(1:len)
       amu0_loc(:)        = amu0(1:len)
@@ -304,18 +304,19 @@
       o3l_loc(:,:) = o3l(:,:)
       acld_loc(:,:)= acld(1:len,1:nlm)
 
-      print*,ts_loc,amu0_loc,slr_loc
-      print*,alvdr_loc,alndr_loc,alvdf_loc,alndf_loc
-      print*,tl(1,nlm-4:nlm),ql(1,nlm-4:nlm)
+      !print*,ts_loc,amu0_loc,slr_loc
+      !print*,alvdr_loc,alndr_loc,alvdf_loc,alndf_loc
+      !print*,tl(1,nlm-4:nlm),ql(1,nlm-4:nlm)
 
       do l = 1, nlm
          acldmx(1:len) = max(acldmx(1:len),acld_loc(1:len,l))
       enddo
-
+!      print*,'bugsrad'
+!      print*,qcwl_loc(1,:)
 
 
 !--- 2. computation of cloud overlap parameters
-      print*,'loc3'
+      !print*,'loc3'
       do i = 1, len
         b1(i,1) = 1.0 - acld_loc(i,1)
         b3(i,1) = 1.0
@@ -366,9 +367,12 @@
       enddo                  
 
 
-
+!      print*,'bugs2'
+!      print*,cwrho(1,:)
+!      print*,acld_loc(1,:)
+     
 !--   3. call to the bugs_rad longwave radiation code:
-      print*,'---- enter subroutine bugs_lwr:'
+      !print*,'---- enter subroutine bugs_lwr:'
       call bugs_lwr
      +          (         len ,    nnp , pl2_loc , pl_loc
      +,               dpl_loc , tl_loc ,    rmix ,  cwrho
@@ -380,7 +384,7 @@
      +,          sel_rules_lw
      +           )
 
-      print*,'---- exit subroutine bugs_lwr:'
+      !print*,'---- exit subroutine bugs_lwr:'
          
 !--   4. call to the bugs_rad shortwave radiation code:
 
@@ -400,7 +404,7 @@
       enddo
       if(nday .eq. 0) goto 1000
 
-      print*,'allocate'
+      !print*,'allocate'
       allocate(ts_day(nday))
       allocate(amu0_day(nday))
       allocate(slr_day(nday))
@@ -438,7 +442,7 @@
       allocate(radnbcc_day(nday))
       allocate(radndcc_day(nday))
 
-      print*,'copystuff'
+      !print*,'copystuff'
       ts_day(1:nday)          = ts_loc(iday(1:nday))
       amu0_day(1:nday)        = amu0_loc(iday(1:nday))
       slr_day(1:nday)         = slr_loc(iday(1:nday))
@@ -463,7 +467,7 @@
       pl2_day(1:nday,1:nnp+1) = pl2_loc(iday(1:nday),1:nnp+1)
 
 
-      print*,'---- enter subroutine bugs_swr:'
+      !print*,'---- enter subroutine bugs_swr:'
       call bugs_swr
      +          (      nday ,         nnp ,      pl2_day ,      pl_day
      +,             dpl_day ,      tl_day ,     rmix_day ,   cwrho_day
@@ -478,7 +482,7 @@
      +,          radndc_day , radndcc_day , sel_rules_sw
      +          )
 
-      print*,'---- end subroutine bugs_swr:'
+      !print*,'---- end subroutine bugs_swr:'
 
       radvbc_loc(iday(1:nday))  = radvbc_day(1:nday)
       radvdc_loc(iday(1:nday))  = radvdc_day(1:nday)
@@ -532,7 +536,7 @@
  1000 continue
 
 !---- 5. computation of long and short wave radiative heating rates:
-      print*,'loc5'
+      !print*,'loc5'
       do l = 1, nlm
          ll = l
          delf(1:len)    = fulw(1:len,ll)-fdlw(1:len,ll)
@@ -562,7 +566,7 @@
       radndcc(1:len) = radndcc_loc(1:len)
       
 
-      print*,'---- exit subroutine bugs_rad:'
+      !print*,'---- exit subroutine bugs_rad:'
       return
       end subroutine bugs_rad
 

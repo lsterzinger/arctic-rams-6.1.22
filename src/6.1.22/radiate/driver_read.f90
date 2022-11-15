@@ -43,7 +43,7 @@
        nlm,&       !Number of layers.
        i,l
 
-      real (kind=dbl_kind), dimension(1,nlm):: &
+      real (kind=dbl_kind), dimension(1):: &
         ts   ,&      !Surface temperature                             (K).
         amu0 ,&      !Cosine of solar zenith angle                    (-).
         slr  ,&      !Fraction of daylight                            (-).
@@ -87,10 +87,10 @@
         fdsw         !All-sky SW downwelling flux                 (W/m^2).
 
 !-----------------------------------------------------------------------
-      print*,'inside bugs_driver'
-      print*,tl(1,1:5)
-      print*,ql(1,1:5)
-      print*,qcwl(1,1:5)
+      !print*,'inside bugs_driver'
+      !print*,tl(1,1:5)
+      !print*,ql(1,1:5)
+      !print*,qcwl(1,1:5)
 !---- 1. READ PROFILE DATA FROM FILE:
       
       nlen = 1    !to do timing tests
@@ -105,7 +105,7 @@
       pl2 = pl2/100. 
 
       do l=1,nlm
-        dpl(1,l) = pl2(1,l+1)-pl2(1,l)
+        dpl(1,l) = pl2(1,l)-pl2(1,l+1)
         if (qcwl(1,l)>1.e-14 .or. qrwl(1,l)>1.e-14 &
            .or. qcil(1,l)>1.e-14 .or. qril(1,l)>1.e-14) then
            acld(1,l)=1.
@@ -113,6 +113,9 @@
            acld(1,l)=0.
         endif
       enddo
+
+      ts = tl(1,1) !ADele - fix later
+      !print*,'maxcloud',maxval(qcwl)
 
       !print*,'start flipping'
       CALL flip_profile(nlm,pl)
@@ -126,26 +129,49 @@
       CALL flip_profile(nlm,qrwl)
       CALL flip_profile(nlm,qril)
       CALL flip_profile(nlm,o3l)
+      CALL flip_profile(nlm,acld)
 
       alndr=alvdr
       alvdf = alvdr
       alndf = alvdr
 
-      ts = tl(1,1) !ADele - fix later
-
       umco2=400.
       umch4=0. !Methane
       umn2o=0. !N2O
+      fdsw=0.
+      fusw=0.
+      fdlw=0.
+      fulw=0.
 
       slr = 1.0
 
 !---- 4. CALL THE RADIATIVE TRANSFER CODE:
       !print*,'call bugsrad'
+      !print*,nlen,len,nlm
+      !print*,pl2
+      !print*,pl
+      !print*,dpl
+      !print*,tl
+      !print*,ql
+      !print*,qcwl
+      !print*,ncwl
+      !print*,qcil
+      !print*,qril
+      !print*,o3l
+      !print*,ts,amu0,slr,alvdf,alndf,alvdr,alndr,sol_const
+      !print*,gravity,cp_dry_air
+      !print*,asl
+      !print*,atl
+      !print*,fdsw
+      !print*,fusw
+      !print*,fdlw
+      !print*,fulw
+      !print*,acld
+      !print*,umco2,umch4,umn2o
       call bugs_rad(nlen,len,nlm,pl2,pl,dpl,tl,ql,qcwl,ncwl,qcil,qril, &
                     o3l,ts,amu0,slr,alvdf,alndf,alvdr,alndr,sol_const, &
                     gravity,cp_dry_air,asl,atl,fdsw,fusw,fdlw,fulw, &
                     acld, umco2, umch4, umn2o)
-
       CALL flip_profile(nlm,pl)
       CALL flip_profile(nlm,tl)
       CALL flip_profile(nlm,ql)
@@ -162,13 +188,11 @@
       CALL flip_profile(nlm+1,fulw)
       CALL flip_profile(nlm+1,fdlw)
 
-      !print*, 'here'
       fdswb(1,:)=fdsw(1,1:nlm)
       fuswb(1,:)=fusw(1,1:nlm)
       fdlwb(1,:)=fdlw(1,1:nlm)
       fulwb(1,:)=fulw(1,1:nlm)
 
-      !print*,'end bugs_driver'
       end subroutine bugs_driver
 
       subroutine flip_profile(nrad,prof)

@@ -302,7 +302,6 @@ if (iswrtyp .eq. 4 .or. ilwrtyp .eq. 4) then
    if (mod(time + .001,radfrq) .lt. dtlt .or. time .lt. .001) then
       !Saleeby(2008): Change passing of 7 to 8 if adding drizzle mode
       ! and modify locations in radcalc3 and radcomp3 to match
-print*,'calling radcalc4'
       CALL radcalc4 (m1,maxnzp,7,iswrtyp,ilwrtyp  &
          ,glat,rtgt,topt  &
          ,radiate%albedt  (i,j) ,radiate%cosz  (i,j)  &
