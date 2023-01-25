@@ -504,13 +504,15 @@ do ib=nir,nb
 !        determine if, and how many overlaps
 
    mxa = 0
-   do ig=1,mg
-      if (npsb(ig,ib).gt.0.and.ngas(ig).eq.1)then
-         mxa = mxa+1
-         na(mxa) = ig
-      endif
-   enddo
+   !do ig=1,mg
+   !   if (npsb(ig,ib).gt.0.and.ngas(ig).eq.1)then
+   !      mxa = mxa+1
+   !      na(mxa) = ig
+   !   endif
+   !enddo
 
+   mxa = 1
+   na(1) = 1
    if (mxa.eq.0) go to 111
    if (mxa.eq.1) then
 
