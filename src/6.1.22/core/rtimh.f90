@@ -180,7 +180,7 @@ endif
 !  Check for negative micro and Nans
 !----------------------------------------
  if(icheckmic == 1) then
-  CALL checkmicro ()
+  CALL checkmicro ('r')
  endif
 
 !  Thermodynamic diagnosis
@@ -251,84 +251,22 @@ real :: total,total2,dn,pitotal
 real,save :: lasttotal
 integer :: ip,jp,kp,i,j,k,patch
 character(len=*) :: string
+logical, external :: isnanr
 
 kp=0
 ip=20
 jp=25
-if(ngrid==1) then
-!if(time==0.)lasttotal=0.
-!do k=1,55
-!do i=ia,iz
-!do j=ja,jz
-!pitotal=basic_g(ngrid)%pi0(k,i,j)+basic_g(ngrid)%pp(k,i,j)
-!dn=100000./287./basic_g(ngrid)%theta(k,i,j)*(pitotal/1004.)**(1004./287.-1.) 
- !total = total + basic_g(ngrid)%dn0(k,i,j) * ( &
- !        micro_g(ngrid)%rpp(k,i,j) + micro_g(ngrid)%rsp(k,i,j) &
- !        + micro_g(ngrid)%rap(k,i,j) + micro_g(ngrid)%rgp(k,i,j) &
- !        + micro_g(ngrid)%rhp(k,i,j)) * 25.
- !total = total + basic_g(ngrid)%dn0(k,i,j) * ( &
- !        micro_g(ngrid)%rcp(k,i,j) + micro_g(ngrid)%rdp(k,i,j))
- !total = total + dn * ( &
- !        micro_g(ngrid)%rcp(k,i,j) + micro_g(ngrid)%rdp(k,i,j))
- !total2 = total2 + micro_g(ngrid)%collpsct(k,i,j)
-! print*, 'maxccp',maxval(micro_g(ngrid)%ccp), maxval(micro_g(ngrid)%cccnp), maxval(micro_g(ngrid)%ccp+micro_g(ngrid)%cccnp)
-!enddo
-!enddo
-!enddo
-!print*,string,total,total2,total-lasttotal
-!lasttotal=total
-endif
-
-!print*,string
-!print*,micro_g(ngrid)%rcp(10,6,7),micro_g(ngrid)%ccp(10,6,7)
-!print*,micro_g(ngrid)%rap(10,6,7),micro_g(ngrid)%cap(10,6,7)
-!CALL NEGADJ1(mzp,mxp,myp)
-!CALL checkmicro()
 !  only here for debugging purposes
 101    format ('DEBUG: NODE',i0,': LOC(',i0,',',i0,',',i0,') --> (' &
    ,i0,',',i0,',',i0,') ',a,': ',a10,f9.1,100e20.10)
 
-if(ngrid==122)then
-do i=ia,iz
-do j=ja,jz
- k=kp
- patch=2
- if(i+mi0(ngrid)==ip .and. j+mj0(ngrid)==jp) then
-   !print 101, mynum, kp, ip, jp, k, i, j, 'THETA', string, time &
-   !  ,basic_g(ngrid)%theta(k,i,j)
-   print 101, mynum, kp, ip, jp, k, i, j, 'SFLUX_U', string, time &
-     ,turb_g(ngrid)%sflux_u(i,j)
-   !print 101, mynum, kp, ip, jp, k, i, j, 'RCO2P', string, time &
-   !  ,valugp(mzp,mxp,myp,kp,ip,jp,tend%rco2t(1))
- endif
-enddo
-enddo
-endif
-
-   if(ngrid==100) then
-     print '(a10,f9.1,2e17.9)',string,time &
-          !    , basic_g(ngrid)%rtp(kp,ip,jp)         &
-          !    , basic_g(ngrid)%rv(kp,ip,jp)
-              , radiate_g(ngrid)%albedt(ip,jp)             &
-              , radiate_g(ngrid)%rlongup(ip,jp)            
-          !    , basic_g(ngrid)%wp_buoy_theta(kp,ip,jp)     &
-          !    , basic_g(ngrid)%wp_buoy_cond(kp,ip,jp)      &
-          !    , basic_g(ngrid)%wp(kp,ip,jp)                &
-          !    , micro_g(ngrid)%rcp(kp,ip,jp)               &
-          !    , valugp(mzp,mxp,myp,kp,ip,jp,tend%rct(1))   &
-          !    , micro_g(ngrid)%ccp(kp,ip,jp)               &
-          !    , valugp(mzp,mxp,myp,kp,ip,jp,tend%cct(1))   &
-          !    , valugp(mzp,mxp,myp,kp,ip,jp,tend%ut(1))    &
-          !    , basic_g(ngrid)%vp(kp,ip,jp)                &
-          !    , valugp(mzp,mxp,myp,kp,ip,jp,tend%vt(1))    &
-          !    , basic_g(ngrid)%thp(kp,ip,jp)               &
-          !    , valugp(mzp,mxp,myp,kp,ip,jp,tend%vt(1))    &
-          !    , basic_g(ngrid)%wp(kp,ip,jp)                &
-          !    , valugp(mzp,mxp,myp,kp,ip,jp,tend%wt(1))    &
-          !    , basic_g(ngrid)%pi0(kp,ip,jp)                 &
-          !    , basicm_g(ngrid)%pi0(kp,ip,jp)         
-   endif
-
+!do ip=1,6
+!do jp=1,6
+!do kp=1,200
+!if (isnanr(micro_g(1)%salt_film_np(kp,ip,jp) )) print*,string
+!enddo
+!enddo
+!enddo
 return
 END SUBROUTINE acctimes
 

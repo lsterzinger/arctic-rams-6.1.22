@@ -205,6 +205,7 @@ if (iccnlev>=2) then
    aeromas(k,8) = micro%regen_aero1_mp(k,i,j)
    aerocon(k,9) = micro%regen_aero2_np(k,i,j)
    aeromas(k,9) = micro%regen_aero2_mp(k,i,j)
+!if (aerocon(k,8)>0.) print*,'rangecheck',k
    if(itrkepsilon==1) then
      regenmas(k,1) = micro%resol_aero1_mp(k,i,j)
      regenmas(k,2) = micro%resol_aero2_mp(k,i,j)
@@ -749,14 +750,14 @@ elseif (jnmb(lcat) >= 5) then
 
          ! Lucas 8/1/2022
          ! If Drizzle durned off, use empty vapdrizt array to track liquid mass transfer
-         if(jnmb(8).eq.0) xvapdrizt(k) = xvapdrizt(k) + (rx(k,1)-fac2)
+         if(jnmb(8).eq.0) xvapdrizt(k) = xvapdrizt(k) + rx(k,1)!(rx(k,1)-fac2)
 
          ! Lucas 8/1/2022
          ! Move in-cloud CCN 
          if (iccnlev >=2) then
-            fac2aero = cnmhx(k,1)*gammp(gnu(lcat)+3.,dmean/dn1)
-            cnmhx(k, 2) = (cnmhx(k, 1) - fac2aero)
-            cnmhx(k, 1) = fac2aero
+            !fac2aero = cnmhx(k,1)*gammp(gnu(lcat)+3.,dmean/dn1)
+            cnmhx(k, 2) = cnmhx(k,2) + cnmhx(k,1)!(cnmhx(k, 1) - fac2aero)
+            cnmhx(k, 1) = 0.!fac2aero
          endif
       else
          !fac1 = min(cx(k,lcat),cx(k,lcat) * gammp(gnu(lcat),emb1(lcat)/dn1))
@@ -770,6 +771,12 @@ elseif (jnmb(lcat) >= 5) then
                dmean=dmean-0.1e-4
                if(dmean<0 .or. dmean.ne.dmean)stop 'cant move cloud to rain, mic_misc line 746'
             enddo
+            if (iccnlev >=2) then
+               fac2aero = cnmhx(k,1)*fac1/cx(k,1)
+               cnmhx(k, 2) = cnmhx(k,2) + (cnmhx(k,1)-fac2aero)
+               cnmhx(k, 1) = fac2aero
+            endif
+            xvapdrizt(k) = xvapdrizt(k) + (rx(k,1)-fac2)
             cx(k,2) = cx(k,2) + (cx(k,1)-fac1)
             rx(k,2) = rx(k,2) + (rx(k,1)-fac2)
             cx(k,lcat) = fac1
@@ -783,10 +790,10 @@ elseif (jnmb(lcat) >= 5) then
             rx(k,lcat) = fac2
          endif
       endif
-      emb(k,lcat) = rx(k,lcat)  &
-      / cx(k,lcat)
-      !   emb(k,lcat) = max(emb0(lcat),min(emb1(lcat),rx(k,lcat)  &
-      !     / max(1.e-12,cx(k,lcat))))
+      !emb(k,lcat) = rx(k,lcat)  &
+      !/ cx(k,lcat)
+         emb(k,lcat) = max(emb0(lcat),min(emb1(lcat),rx(k,lcat)  &
+           / max(1.e-12,cx(k,lcat))))
       endif
      endif
    enddo
@@ -1688,6 +1695,10 @@ do j = 1,m3
        if(jnmb(lcat)>=5 .and. (rx(k,lcat) < 1.e-12 .or. cx(k,lcat) <= 0.0)) then
          ccnmass = cnmhx(k,lcat)
          cxloss = cx(k, lcat)
+         if (ccnmass == 0. .or. cxloss == 0.) then
+            ccnmass=0.
+            cxloss=0.
+         endif
          rx(k,lcat) = 0.
          cx(k,lcat) = 0.
        endif
@@ -1698,11 +1709,15 @@ do j = 1,m3
          if(iccnlev>=2) then
            cnmhx(k,lcat) = 0.
            if (lcat==1 .or. lcat==2 .or. lcat==8) then
-            micro%regen_aero1_mp(k,i,j) = micro%regen_aero1_mp(k,i,j) + ccnmass
-            micro%regen_aero1_np(k,i,j) = micro%regen_aero1_np(k,i,j) + cxloss
+            micro%salt_film_np(k,i,j) = micro%salt_film_np(k,i,j) + cxloss
+            micro%salt_film_mp(k,i,j) = micro%salt_film_mp(k,i,j) + ccnmass
+            !micro%regen_aero1_mp(k,i,j) = micro%regen_aero1_mp(k,i,j) + ccnmass
+            !micro%regen_aero1_np(k,i,j) = micro%regen_aero1_np(k,i,j) + cxloss
            else if (iregendust==1) then
-            micro%regen_aero2_mp(k,i,j) = micro%regen_aero2_mp(k,i,j) + ccnmass
-            micro%regen_aero2_np(k,i,j) = micro%regen_aero2_np(k,i,j) + cxloss
+            micro%md1np(k,i,j) = micro%md1np(k,i,j) + cxloss
+            micro%md1mp(k,i,j) = micro%md1mp(k,i,j) + ccnmass
+            !micro%regen_aero2_mp(k,i,j) = micro%regen_aero2_mp(k,i,j) + ccnmass
+            !micro%regen_aero2_np(k,i,j) = micro%regen_aero2_np(k,i,j) + cxloss
            endif
        
            if(itrkepsilon==1) snmhx(k,lcat) = 0.
@@ -1905,7 +1920,7 @@ do j = 1,m3
    endif
   endif
   if(isalt>0) then
-   if(micro%salt_film_np(k,i,j)<mincon .or. micro%salt_film_mp(k,i,j)<minmas) then
+   if(micro%salt_film_np(k,i,j)<=mincon .or. micro%salt_film_mp(k,i,j)<=minmas) then
       micro%salt_film_np(k,i,j) = 0.0
       micro%salt_film_mp(k,i,j) = 0.0
    endif
@@ -1919,11 +1934,13 @@ do j = 1,m3
    endif
   endif
   if(level==3 .and. iccnlev>=2) then
-   if(micro%regen_aero1_np(k,i,j)<mincon .or. micro%regen_aero1_mp(k,i,j)<minmas)then
+   if(micro%regen_aero1_np(k,i,j)<=mincon+1.e-45 .or. micro%regen_aero1_mp(k,i,j)<=minmas+1.e-45)then
       micro%regen_aero1_np(k,i,j) = 0.0
       micro%regen_aero1_mp(k,i,j) = 0.0
+!   else
+!print*,'negadj',micro%regen_aero2_np(k,i,j),micro%regen_aero1_np(k,i,j),k,i,j
    endif
-   if(micro%regen_aero2_np(k,i,j)<mincon .or. micro%regen_aero2_mp(k,i,j)<minmas)then
+   if(micro%regen_aero2_np(k,i,j)<=mincon .or. micro%regen_aero2_mp(k,i,j)<=minmas)then
       micro%regen_aero2_np(k,i,j) = 0.0
       micro%regen_aero2_mp(k,i,j) = 0.0
    endif

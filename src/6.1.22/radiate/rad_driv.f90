@@ -1395,162 +1395,6 @@ Subroutine radcalc4 (m1,maxnzp,mcat,iswrtyp,ilwrtyp  &
    ,zm,zt,rv,dn0,pi0,pp,fthrd,i,j,ngrid &
    ,bext,swup,swdn,lwup,lwdn)
 
-!-----------------------------------------------------------------------------
-! radcalc3: column driver for twostream radiation code
-! variables used within routine radcalc3:
-! ==================================================================
-! Variables in rrad3 parameter statement
-!  mb               : maximum allowed number of bands [=8]
-!  mg                  : maximum allowed number of gases [=3]
-!  mk               : maximum number of pseudobands allowed for any gas [=7]
-!  ncog             : number of fit coefficients (omega and asym) [=5]
-!  ncb              : number of fit coefficients (extinction) [=2]
-!  npartob          : number of hydrometeor categories (including different habits)
-!  npartg           : number of hydrometeor categories used for gc coefficients [=7]
-!  nrad                  : total number of radiation levels used (m1 - 1 + narad)
-!  narad            : number of radiation levels added above model
-!  nsolb            : active number of solar bands
-!  nb               : active number of bands
-!  ng                : active number of gases
-!  jday             : julian day
-!  solfac           : solar constant multiplier for variable E-S distance
-!  ralcs (mb)       : rayleigh scattering integration constants
-!  solar1 (mb)      : solar fluxes at top of atmosphere - corrected for ES distance
-!  solar0 (mb)      : solar fluxes at top of atmosphere - uncorrected for ES distance
-!  nuum (mb)        :    continuum flags
-!  a0,a1,a2,a3 (mb) : Planck func fit coefficients
-!  npsb (mg,mb)     : number of pseudo bands
-!  trf (mg,mb)      : reference temperature for xp and wght coefficients
-!  prf (mg,mb)      : reference pressure for xp and wght coefficients
-!  ulim (mg,mb)     : upper bound on pathlength for gases
-!  xp (mg,mk,mb)    : coefficient used in computing gaseous optical depth
-!  alpha (mg,mk,mb) : pressure correction factor exponent
-!  beta (mg,mk,mb)  : temperature correction factor exponent
-!  wght (mg,mk,mb)  : pseudo band weight
-!  exptabc (150)    : table of exponential func values
-!  ocoef(ncog,mb,npartob)  : fit coefficients for hyd. single scatter.
-!  bcoef(ncb,mb ,npartob)  : fit coefficients for hyd. extinction coefficient.
-!  gcoef(ncog,mb,npartg)   : fit coefficients for hyd. asymmetry parameter.
-!
-! Input variables from model
-!
-!  m1               : number of vertical levels in model grid
-!  ncat             : max number of hydrometeor categories [=7]
-!  mcat             : actual number of hydrometeor categories [= 0, 1, or 7]
-!  nhcat            : number of hydrometeor categories including ice habits [=15]
-!  iswrtyp          : shortwave radiation parameterization selection flag
-!  ilwrtyp          : longwave radiation parameterization selection flag
-!  glat             : latitude
-!  rtgt             : terrain-following coordinate metric factor
-!  topt             : topography height
-!  albedt          : surface albedo
-!  cosz             : solar zenith angle
-!  rlongup          : upward longwave radiation at surface (W/m^2)
-!  rshort           : downward shortwave radiation at surface (W/m^2)
-!  rlong            : downward longwave radiation at surface (W/m^2)
-!  jnmb (ncat)      : microphysics category flag
-!  dnfac (nhcat)    : factor for computing dn from emb
-!  pwmasi (nhcat)   : inverse of mass power law exponent for hydrometeors
-!  zm (m1)          : model physical heights of W points (m)
-!  zt (m1)          : model physical heights of T points (m)
-!  press (nzpmax)   : model pressure (Pa)
-!  tair (nzpmax)    : model temperature (K)
-!  rv (m1)          : model vapor mixing ratio (kg/kg)
-!  dn0 (m1)         : model air density (kg/m^3)
-!  fthrd (m1)       : theta_il tendency from radiation
-!  jhcat (nzpmax,ncat)  : microphysics category array
-!  cx (nzpmax,ncat) : hydrometeor number concentration (#/kg)
-!  emb (nzpmax,ncat): hydrometeor mean mass (kg)
-!
-! Variables input from model scratch space (redefined internally on each call)
-!
-!  zml (nrad)       : physical heights of W points of all radiation levels (m)
-!  ztl (nrad)       : physical heights of T points of all radiation levels (m)
-!  dzl (nrad)       : delta-z (m) of all radiation levels
-!  pl (nrad)        : pressure (Pa)
-!  tl (nrad)        : temperature (K)
-!  dl (nrad)        : air density of all radiation levels (kg/m^3)
-!  rl (nrad)        : vapor density of all radiation levels (kg/m^3)
-!  vp (nrad)        : vapor pressure (Pa)
-!  o3l (nrad)       : stores the calculated ozone profile (g/m^3)
-!  flxu (nrad)      : Total upwelling flux (W/m^2)
-!  flxd (nrad)      : Total downwelling flux (W/m^2)
-!  t (nrad)         : layer transmission func
-!  r (nrad)         : layer reflection func
-!  tc (nrad)        : cumulative optical depth
-!  sigu (nrad)      : upwelling layer source func
-!  sigd (nrad)      : downwelling layer source func
-!  re (nrad)        : cumulative reflection func
-!  vd (nrad)        : multi-scat. diffuse downwelling contributions
-!                         from source func
-!  td (nrad)        : inverse of cumulative transmission fnct
-!  vu (nrad)        : multi-scat. diffuse upwelling contributions
-!                         from source func
-!  tg (nrad)        : gaseous optical depth
-!  tcr (nrad)       : continuum/Rayleigh optical depth
-!  src (nrad)       : Planck func source for each band
-!  fu (nrad*6)      : upwelling fluxes for pseudo-bands (W/m^2)
-!  fd (nrad*6)      : downwelling fluxes for pseudo-bands (W/m^2)
-!  u (nrad*mg)      : path-length for gases (H_2O, CO_2, O_3)  (Pa)
-!  tp (nrad*mb)     : optical depth of hydrometeors (m^-1)
-!  omgp (nrad*mb)   : Single scatter albedo of hydrometeors
-!  gp (nrad*mb)     : Asymmetry factor of hydrometeors
-!
-! Locally-defined variables
-!
-!  ngass (mg)       : flags indicating if H20, CO2, O3 are active for solar wavelengths
-!  ngast (mg)       : flags indicating if H20, CO2, O3 are active for long wavelengths
-!  prsnz,prsnzp     : pressure in top two model reference state levels
-!
-! Additional variables used only within routine mclatchy:
-! ==================================================================
-! namax            : maximum allowed number of added rad levels above model top[=10]
-!                       used for oc and bc coefficients [=13]
-! mcdat (33,9,6)    : Mclatchy sounding data (33 levels, 9 soundings, 6 vars)
-! mclat (33,9,6)    : mcdat interpolated by season to latitude bands
-! mcol (33,6)       : mclat interpolated to lat-lon of grid column
-!
-! Additional variables used only within routine cloud_opt:
-! ==================================================================
-!  ib .......... band number
-!  dn .......... characteristic diameter (m)
-!  oc .......... scattering albedo fit coefficients
-!  bc .......... extinction fit coefficients
-!  gc .......... asymmetery fit coefficients
-!  kradcat ..... cross-reference table giving Jerry's 13 hydrometeor category
-!                   numbers as a func of 15 microphysics category numbers
-!
-! Particle Numbers describe the following particles:
-!
-!     Harrington radiation code             RAMS microphysics
-! ----------------------------------------------------------------
-!  1:   cloud drops                 1.  cloud drops
-!  2:   rain                        2.  rain
-!  3:   pristine ice columns        3.  pristine ice columns
-!  4:   pristine ice rosettes       4.  snow columns
-!  5:   pristine ice plates         5.  aggregates
-!  6:   snow columns                6.  graupel
-!  7:   snow rosettes               7.  hail
-!  8:   snow plates                 8.  pristine ice hexagonal plates
-!  9:   aggregates columns          9.  pristine ice dendrites
-!  10:  aggregates rosettes        10.  pristine ice needles
-!  11:  aggregates plates          11.  pristine ice rosettes
-!  12:  graupel                    12.  snow hexagonal plates
-!  13:  hail                       13.  snow dendrites
-!                                  14.  snow needles
-!                                  15.  snow rosettes
-!
-! for the asymmetery parameter, since we only have spherical
-! particles, there are only 7 particle types...
-!  1:   cloud drops
-!  2:   rain
-!  3:   pristine ice
-!  4:   snow
-!  5:   aggregates
-!  6:   graupel
-!  7:   hail
-!---------------------------------------------------------------------------
-
 use rconstants
 use rrad3
 use micphys
@@ -1698,11 +1542,17 @@ CALL bugs_driver(nrad,cosz,albedt,pl(1:nrad),tl(1:nrad),rl(1:nrad),rcl(1:nrad) &
 do k = 1,m1!2,m1-1
    !divide by exner to get potential temp heating rate
    fthrd(k) = fthrd(k) + (fthsw(k)+fthlw(k))/exner(k)
-   swup(k) = flxus(k)
-   swdn(k) = flxds(k)
+   if (iswrtyp>0) then
+      fthrd(k) = fthrd(k) + fthsw(k)/exner(k)
+      swup(k) = flxus(k)
+      swdn(k) = flxds(k)
+   endif
 
-   lwup(k) = flxul(k)
-   lwdn(k) = flxdl(k) 
+   if (ilwrtyp>0) then
+      fthrd(k) = fthrd(k) + fthlw(k)/exner(k)
+      lwup(k) = flxul(k)
+      lwdn(k) = flxdl(k) 
+   endif
 enddo
 
 rshort = flxds(1)

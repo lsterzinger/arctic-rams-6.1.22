@@ -26,10 +26,11 @@ integer :: machsize=0,machnum=0
 integer :: taskids(maxmach),nn,icall,nproc,ipara
 
 integer :: i,numarg,iargc,bad=0
-character(len=strl1) :: name_name,arg,cargs(0:maxargs)
+character(len=strl1) :: name_name,sound_name,arg,cargs(0:maxargs)
 
 ! argument defaults
 name_name='RAMSIN'
+sound_name='SOUND_IN'
 
 ! read arguments
 do i=1,maxargs
@@ -57,6 +58,22 @@ if(numarg > 0)then
    else
     bad=1
    endif
+ elseif(numarg == 3) then
+   if(cargs(1)(1:1)=='-' .and. cargs(1)(1:2)=='-f') then
+    if(len_trim(cargs(2)).gt.80) then
+       print*,'Max filename length = 80 characters'
+       bad=1
+    endif
+    ! We just null terminated the file name (cargs(2)) so it can be
+    ! passed to C (par_init_fortran) as a proper C string.
+    ! Trim off the trailing null for the FORTRAN string nl_fname
+    name_name=cargs(2)(1:len_trim(cargs(2))-1)
+
+    sound_name=cargs(3)(1:len_trim(cargs(3))-1)
+   else
+    bad=1
+   endif
+   
  else
    bad=1
  endif
@@ -95,7 +112,7 @@ endif
 if (icall == 0) then
 
    print_msg = .true.
-   CALL rams_master (ipara,nproc,taskids,machnum,name_name)
+   CALL rams_master (ipara,nproc,taskids,machnum,name_name,sound_name)
 
 else if (icall == 1) then
 

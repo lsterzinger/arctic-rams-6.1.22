@@ -231,7 +231,7 @@ return
 END SUBROUTINE aero_copy
 
 !##############################################################################
-Subroutine checkmicro ()
+Subroutine checkmicro (string)
 
 use mem_basic
 use mem_micro
@@ -244,7 +244,7 @@ implicit none
 
 integer :: k,i,j,prtflg,mprtflg
 logical, external :: isnanr
-
+character(1)::string
 prtflg=0
 mprtflg=0
 
@@ -522,7 +522,7 @@ do k = 1,mzp
  endif
 
  if(prtflg==1)then
-    print*,'NAN k,i,j',k,i+i0,j+j0,ngrid
+    print*,trim(string),' NAN k,i,j',k,i+i0,j+j0,ngrid
     if(iaerosol > 0)then
       print*,'cccnp',micro_g(ngrid)%cccnp(k,i,j)
       print*,'cccmp',micro_g(ngrid)%cccmp(k,i,j)
@@ -626,6 +626,7 @@ enddo
 enddo
 enddo
 
+!print*,'Adele'
 return
 END SUBROUTINE checkmicro
 

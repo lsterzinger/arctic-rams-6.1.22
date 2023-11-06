@@ -15,7 +15,7 @@
 ! 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 !======================================================================================
 
-Subroutine rams_master (iparall,nproc,taskids,master_num,name_name)
+Subroutine rams_master (iparall,nproc,taskids,master_num,name_name,sound_name)
 
 use rpara
 use mem_grid
@@ -25,7 +25,7 @@ use io_params, only:hfilin
 implicit none
 
 integer taskids(*)
-character(len=*) :: name_name
+character(len=*) :: name_name,sound_name
 integer :: iparall,nproc,master_num
 integer :: i,ifm,ns,nndtflg,namelength
 real :: w1,w2,w3,t1,t2,wtime_start
@@ -151,7 +151,7 @@ print*, '---------------------------------------------------'
 !          call the main initialization driver
 !          -----------------------------------
 
-CALL initlz (name_name)
+CALL initlz (sound_name)
 
 ! Compute Courant numbers cflxy and cflz.
 

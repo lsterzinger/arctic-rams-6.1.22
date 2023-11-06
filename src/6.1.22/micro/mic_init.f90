@@ -621,6 +621,27 @@ return
 END SUBROUTINE init_dust
 
 !##############################################################################
+Subroutine init_regen (n1,n2,n3,regen1_np,regen1_mp,regen2_np &
+                       ,regen2_mp,ifm)
+
+use micphys
+use rconstants
+use mem_grid
+
+implicit none
+
+integer :: n1,n2,n3,i,j,k,ifm
+real, dimension(n1,n2,n3) :: regen1_np,regen2_np
+real, dimension(n1,n2,n3) :: regen1_mp,regen2_mp
+
+regen1_np(:,:,:)=0.
+regen1_mp(:,:,:)=0.
+regen2_np(:,:,:)=0.
+regen2_mp(:,:,:)=0.
+
+return
+END SUBROUTINE init_regen
+!##############################################################################
 Subroutine init_salt (n1,n2,n3,salt_film_np,salt_jet_np,salt_spum_np &
                        ,salt_film_mp,salt_jet_mp,salt_spum_mp,ifm)
 
@@ -693,9 +714,13 @@ do j = 1,n3
    elseif(isalt == 3) then
       ! Above/below inversion concentrations go here
       ! if((i.eq.1).and.(j.eq.1)) print *, "Different above/below cloud salt", saltf_maxt_bl, saltf_maxt_ft, blh
-      if(zt(k)<=blh) salt_film_np(k,i,j) = saltf_maxt_bl
-      if(zt(k)>blh) salt_film_np(k,i,j) = saltf_maxt_ft
-
+      if(zt(k)<=blh) then
+         salt_film_np(k,i,j) = saltf_maxt_bl
+      elseif(zt(k)>blh+100.)then 
+         salt_film_np(k,i,j) = saltf_maxt_ft
+      else !transition
+         salt_film_np(k,i,j) = saltf_maxt_bl+ (saltf_maxt_ft-saltf_maxt_bl)/100.*(zt(k)-blh)
+      endif
       !Set up 3D Field of FILM MODE SALT mass (kg/kg)
       salt_film_mp(k,i,j) = ((aero_medrad(5)*aero_rg2rm(5))**3.) &
       *salt_film_np(k,i,j)/(0.23873/aero_rhosol(5))

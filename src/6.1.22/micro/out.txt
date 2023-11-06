@@ -1,0 +1,75 @@
+aero_deposit.f90:       xdeltat        ,&  ! timestep
+aero_deposit.f90:      real tau           ! relaxation time, tau*g = gravitational settling
+aero_deposit.f90:      ! Charaxteristic relaxation time of particle
+aero_include.f90:!salt source nudging time scale
+aero_include.f90:real, parameter :: time_salt= 3600.
+aero_sources.f90: if(dustloftsource==1 .and. time.eq.0.0) then
+aero_sources.f90: !Compute dust sources one gridcell at a time
+aero_sources.f90:!are user defined in centimeters.
+aero_sources.f90:real :: dtlt,time_salt
+aero_sources.f90:time_salt = dtlt !relaxation time in seconds
+aero_sources.f90: !Zero out the final source func prior to updated timestep computation
+aero_sources.f90:        - salt_film_np(2,i,j)*dn0(2,i,j)) * dtlt / time_salt * parea(i,j,np)
+aero_sources.f90:        - salt_jet_np(2,i,j)*dn0(2,i,j))  * dtlt / time_salt * parea(i,j,np)
+aero_sources.f90:        - salt_spum_np(2,i,j)*dn0(2,i,j)) * dtlt / time_salt * parea(i,j,np)
+aero_sources.f90: !Zero out the final source func prior to updated timestep computation
+mic_aero.f90:    print*,'Try shorter timestep. These can become negative due to'
+mic_coll.f90:! present timestep, but must still be corrected for the effect of
+mic_coll.f90:! one timestep dtlt when large numbers of crystals are present. Assumes
+mic_driv.f90:      CALL range_check (mzp,k1,k2,k3,i,j,frqstate(ngrid),ngrid,dtlt,time &
+mic_driv.f90:         ,nembfall,ndensrtgt,maxkfall,dtlt,dtlti,time,zm &
+mic_driv.f90:   ,nembfall,ndensrtgt,maxkfall,dtlt,dtlti,time,zm,zt  &
+mic_driv.f90:real                       :: dtlt,dtlti,time
+mic_driv.f90:if (time.le.inoraintime) then
+mic_driv.f90:! if (time .eq. fccnstart .and. iccnlev == 2) then
+mic_driv.f90:   if (mod(time + .001,radfrq) .lt. dtlt .or. time .lt. .001) then
+mic_driv.f90:   if (mod(time + .001,radfrq) .lt. dtlt .or. time .lt. .001) then
+mic_driv.f90:if(iforceccn.gt.0 .and. time .ge. fccnstart) then
+mic_driv.f90: CALL reset_ccn(m1,time,rv(1),kbot,ktop)
+mic_driv.f90:! predicted. At this time, it does not differentiate between liquid and
+mic_driv.f90:! predicted. At this time, it does not differentiate between freezing and
+mic_driv.f90:! predicted. At this time, it does not differentiate between nucleation and
+mic_driv.f90:! predicted. At this time, it does not differentiate between nucleation and
+mic_init.f90:Subroutine reset_ccn (m1,time,rv,k1,k2)
+mic_init.f90:real :: ccn_maxt,time,salt_maxt
+mic_init.f90:!decay timescale
+mic_init.f90:      aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+mic_init.f90:    if ((zt(k).ge.blh .or. zt(k).ge.zt(k2)).and.(k2.ne.0))  aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+mic_init.f90:    aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+mic_init.f90:      aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+mic_init.f90:      aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+mic_init.f90:      aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+mic_init.f90:   expected_val = ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+mic_init.f90:  !     aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+mic_init.f90:  !    aerocon(k,1)=ccn_maxt * exp(-1.* (time-fccnstart)/fccnts)
+mic_misc.f90:Subroutine range_check (m1,k1,k2,k3,i,j,frq,ngr,dtlt,time,ioutput,micro)
+mic_misc.f90:real :: frq,time,dtlt
+mic_misc.f90:if( (IOUTPUT>0 .and. mod(time+0.001,frq).lt.dtlt) .or. time.lt.0.001 )then
+mic_misc.f90:   print*,'Resetting micro budgets',time,ngr
+mic_misc.f90:endif !If time to reset at analysis write
+mic_misc.f90:      !generally small but could accumulate over time. Added the IF statement
+mic_nuc.f90:         if (time .ge. fccnstart .and. time .lt. fccnstart + 60.) then 
+mic_nuc.f90:use mem_grid, only : time
+mic_nuc.f90:   if (time .ge. fccnstart .and. time .lt. fccnstart + 60.) then 
+mic_nuc.f90:!  pbvi  = Brownian motion nucleation amount this timestep [#/kg_air]
+mic_nuc.f90:!  ptvi  = Thermophoretic nucleation amount this timestep [#/kg_air]
+mic_nuc.f90:!  pdvi  = Diffusiophoretic nucleation amount this timestep [#/kg_air],
+mic_nuctab.f90:!Median radius is in centimeters as is the parcel model.
+mic_nuctab.f90:!Median radius is in centimeters as is the parcel model.
+mic_nuctab.f90:!Median radius is in centimeters as is the parcel model.
+mic_nuctab.f90:!Median radius is in centimeters as is the parcel model.
+mic_tabs.f90:! Because timestep may now be variable in time, define sedtime0 and sedtime1
+mic_tabs.f90:! less than 0.7 of the shortest timestep on any grid (sqrt(dn0i) never exceeds
+mic_tabs.f90:! 0.7) and the latter is the longest timestep expected to ever be used (300
+mic_tabs.f90:! seconds) times a factor of 2 for the maximum inverse of rtgt times a factor
+mic_tabs.f90:sedtime0 = .1
+mic_tabs.f90:sedtime1 = 3000.
+mic_tabs.f90:   !Displacement max based on largest size and timestep (Saleeby 8-17-05)
+mic_tabs.f90:   dispemb0(lhcat,ngr) = sedtime0 * cfvt(lhcat)  &
+mic_tabs.f90:   dispemb1(lhcat,ngr) = sedtime1 * cfvt(lhcat)  &
+mic_tabs.f90:!Displacement max based on largest size and timestep (Saleeby 8-17-05)
+mic_tabs.f90:         if(rbin(ibin)>0.) dispmax = fall(ibin) * dtsed !max timestep displacement
+mic_tabs.f90:            disp = dtsed * fall(ibin) !distance fallen in 1 timestep
+mic_vap.f90:use mem_grid, only:time
+micphys.f90:       ,colf,pi4dt,sedtime0,sedtime1                            &
+micphys.f90:integer :: inoraintime

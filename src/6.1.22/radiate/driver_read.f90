@@ -96,10 +96,11 @@
       nlen = 1    !to do timing tests
       len = nlen
 !----
-      do l=2,nlm+1
+      do l=2,nlm
        pl2(1,l)=(pl(1,l-1)+pl(1,l))/2.
       enddo
       pl2(1,1)=pl2(1,2)+abs(pl2(1,2)-pl2(1,3))
+      pl2(1,nlm+1)=max(1000.,pl2(1,nlm)-abs(pl2(1,nlm)-pl2(1,nlm-1)))
 
       pl = pl/100. !convert from Pascals to millibars
       pl2 = pl2/100. 

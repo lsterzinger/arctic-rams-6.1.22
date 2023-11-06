@@ -970,7 +970,7 @@ do j = 1,n3
             ,leaf_g(ifm)%veg_albedo   (i,j,ipat) &
             ,leaf_g(ifm)%veg_ndvic    (i,j,ipat) )
 
-         ksn = nint(sfcwater_nlev(i,j,ipat))
+         ksn = max(1,nint(sfcwater_nlev(i,j,ipat)))
          CALL grndvap (  &
              soil_energy(mzg,i,j,ipat),soil_water(mzg,i,j,ipat)  &
             ,soil_text  (mzg,i,j,ipat),sfcwater_energy(ksn,i,j,ipat)  &
