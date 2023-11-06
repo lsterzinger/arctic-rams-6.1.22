@@ -331,11 +331,11 @@ do k = k1,k2
 
      ! if not a liquid hydrometeor, release aerosol to acat 8
      if (lcat.eq.1 .or. lcat.eq.2 .or.  lcat.eq.8) then
-      acat = 8
+      acat = 5 !smallest sea salt mode
       aeromas(k,acat) = aeromas(k,acat) + ccnmass
       aerocon(k,acat) = aerocon(k,acat) + cxloss
      else if (iregendust == 1) then
-      acat=9
+      acat=3 !small dust mode
       aeromas(k,acat) = aeromas(k,acat) + ccnmass
       aerocon(k,acat) = aerocon(k,acat) + cxloss
 

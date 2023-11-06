@@ -24,6 +24,7 @@ implicit none
 
 integer :: k,i,j
 
+!print*,'Adele'
 !*********** AEROSOL PROPERTIES CHECKING ******************************
 do acat=1,aerocat
 
@@ -44,11 +45,11 @@ do acat=1,aerocat
      aeromass   = aeromas(k,acat)
 
      !Keep median radius and aerosol mass in bounds
-    !  if(aerocon(k,acat) > mincon .and. aeromas(k,acat) > minmas) then
+      if(aerocon(k,acat) > mincon .and. aeromas(k,acat) > minmas) then
 
-    !    rhosol=aero_rhosol(acat)
-    !    aero_rg(acat)=((0.23873/rhosol*aeromas(k,acat)/aerocon(k,acat)) &
-    !                 **(1./3.))/aero_rg2rm(acat)
+        rhosol=aero_rhosol(acat)
+        aero_rg(acat)=((0.23873/rhosol*aeromas(k,acat)/aerocon(k,acat)) &
+                     **(1./3.))/aero_rg2rm(acat)
 
     !   !  if(aero_rg(acat) < 0.01e-6) aero_rg(acat) = 0.01e-6
     !   !  if(aero_rg(acat) > 6.50e-6) aero_rg(acat) = 6.50e-6
@@ -59,7 +60,7 @@ do acat=1,aerocat
     !    if(iccnlev>=2 .and. itrkepsilon==1 .and. (acat==8.or.acat==9)) &
     !      regenmas(k,acat-7) = regenmas(k,acat-7) * (aeromas(k,acat) / aeromass)
 
-    !  endif
+      endif
 
   endif
 
@@ -305,7 +306,7 @@ real, dimension(m1) :: dn0,rv,total_aero
       !Aerosol and solubility tracking
       if(iccnlev>=2 .and. itrkepsilon==1 .and. acat==9 &
        .and. aeromas(k,acat)>0.) then
-         epsil = min(1.0,regenmas(k, 3)) / aeromas(k,acat)
+         epsil = min(1.0,regenmas(k, 2)) / aeromas(k,acat)
       endif
 
       ! aerocon(k,acat) = aerocon(k,acat) - totifnn(k,acat)
@@ -320,7 +321,7 @@ real, dimension(m1) :: dn0,rv,total_aero
        if(itrkepsilon==1) then
          snmhx(k,3) = snmhx(k,3) + totifnm(k,acat) * epsil
          if(acat==9) then
-          regenmas(k,3) = regenmas(k,3)- totifnm(k,acat) * epsil  
+          regenmas(k,2) = regenmas(k,2)- totifnm(k,acat) * epsil  
          endif       
        endif
        if(itrkdust==1 .and. (acat==3 .or. acat==4)) &

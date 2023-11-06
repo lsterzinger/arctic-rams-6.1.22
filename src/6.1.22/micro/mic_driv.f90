@@ -78,6 +78,7 @@ allocate (pcp_tab(ngr)%allpcp(mmzp(ngr),nembfall,nhcat,ndensrtgt,nband))
 endif
 
 if (ncall2g(ngrid) .ne. 5) then
+call checkmicro('c')
    ncall2g(ngrid) = 5
 
    if(isedim==0) &
@@ -115,7 +116,6 @@ ngr = ngrid
 
 do j = ja,jz
    do i = ia,iz
-
       CALL range_check (mzp,k1,k2,k3,i,j,frqstate(ngrid),ngrid,dtlt,time &
                       ,ioutput,micro_g(ngr))
 
@@ -178,6 +178,7 @@ Subroutine mcphys (m1,k1,k2,k3,i,j,ngr,maxnzp  &
    ,imonthx,npatch)
 
 use mem_radiate
+use mem_micro
 use rconstants
 use rrad3
 use micphys
@@ -186,6 +187,7 @@ use node_mod, only: i0,j0
 implicit none
 
 type (radiate_vars) :: radiate
+type (micro_vars) :: micro
 
 integer :: i,j,k,lcat,jcat,icv,icx,mc1,mc2,mc3,mc4,m1  &
           ,ngr,nembfall,ndensrtgt,maxkfall  &
@@ -220,7 +222,6 @@ integer :: npatch,imonthx
 real, dimension(npatch) :: lclass,ustar,parea,vrough,srough
 real, dimension(m1) :: uup,vvp
 
-logical, external :: isnanr
 ! (mcats) is for rain, agg, graupel, hail self-collection (cols)
 data mcats /0,3,0,0,6,7,10,0/     ! (effxy) number for coll efficiency
 ! (mcat1) is for ice-ice interactions (col1)
@@ -447,6 +448,7 @@ qx_lhr = qx
 
 ! Make hydrometeor transfers due to collision-coalescence
  CALL colxfers (m1,k1,k2,scrmic1,scrmic2)
+
 if (jnmb(4) .ge. 1) then
    CALL psxfer2 (k1(3),k2(3),k1(4),k2(4),i,j)
 endif
@@ -565,6 +567,7 @@ if(iforceccn.gt.0 .and. time .ge. fccnstart) then
  CALL reset_ccn(m1,time,rv(1),kbot,ktop)
 endif
 
+!if (any(aerocon(:,8).ne.aerocon(:,8))) print*,'dep > 0!'
 return
 END SUBROUTINE mcphys
 

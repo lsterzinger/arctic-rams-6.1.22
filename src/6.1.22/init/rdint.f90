@@ -15,7 +15,7 @@
 ! 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 !======================================================================================
 
-Subroutine initlz ()
+Subroutine initlz (sound_name)
 
 use mem_leaf
 use mem_sib
@@ -38,6 +38,7 @@ implicit none
 !---------------------------------------------------------------------
 
 integer :: ifm,icm,ngr,nv,ierr,nsc
+character(len=*) :: sound_name
 
 ! Initialize aerosol density and vanthoff factors if they are used
 if(iaerosol>0 .or. idust>0 .or. isalt>0) &
@@ -99,7 +100,7 @@ if (trim(runtype) == 'INITIAL' .or. &
          print*,'----------------------------------------------------'
          print*,'Horizontally-homogeneous-INITIAL start of grid- 1' 
          print*,'----------------------------------------------------'
-         CALL inithh ()
+         CALL inithh (sound_name)
       endif
    
       ! If "history" initialization or restart, call INITHIS.  
@@ -186,6 +187,12 @@ if (trim(runtype) == 'INITIAL' .or. &
           ,micro_g(ifm)%salt_film_mp (1,1,1)  &
           ,micro_g(ifm)%salt_jet_mp  (1,1,1)  &
           ,micro_g(ifm)%salt_spum_mp (1,1,1),ifm)
+       if(iaerosol > 0 .and. iccnlev==2) CALL init_regen (nzp,nxp,nyp    &
+          ,micro_g(ifm)%regen_aero1_mp(1,1,1) &
+          ,micro_g(ifm)%regen_aero1_np(1,1,1) &
+          ,micro_g(ifm)%regen_aero2_mp(1,1,1) &
+          ,micro_g(ifm)%regen_aero2_np(1,1,1) &
+          ,basic_g(ifm)%dn0   (1,1,1),ifm)
        if(level == 3) then
          if(ipris >= 5 .and. (iifn==1.or.iifn==2)) then
            CALL init_ifn (nzp,nxp,nyp    &

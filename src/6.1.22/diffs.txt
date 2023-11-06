@@ -1,0 +1,213 @@
+diff -r micro/aero_deposit.f90 ../../src_old/6.1.22/micro/aero_deposit.f90
+101a102,103
+>  gaincon = 0.
+>  gainmas = 0.
+120c122,126
+<      if(aerocon(k,acat)>mincon .and. aeromas(k,acat)>=minmas) then
+---
+>      if(aerocon(k,acat)<=0.0 .or. aeromas(k,acat)<=0.0) then
+>         aerocon(k,acat) = 0.0
+>         aeromas(k,acat) = 0.0
+>      endif
+>      if(aerocon(k,acat)>mincon .and. aeromas(k,acat)>minmas) then
+124c130,138
+<       rdry(k)=0.005e-6
+---
+>       rdry(k)=0.005e-6 !.5 nm - too small to be too important, but prevents zeros
+>    !   if (aeromas(k,acat)==minmas .and. aerocon(k,acat)>mincon) &
+>    !      aeromas(k,acat) = (rdry(k)*aero_rg2rm(acat))**3.*aerocon(k,acat)*aero_rhosol(acat)/0.23873
+>    !   if (aeromas(k,acat)>minmas .and. aerocon(k,acat)==mincon) &
+>    !      aerocon(k,acat) = ((rdry(k)*aero_rg2rm(acat))**3./aeromas(k,acat)*aero_rhosol(acat)/0.23873)**(-1.)
+>    !   if (aeromas(k,acat)==minmas .and. aerocon(k,acat)==mincon) then
+>    !      aerocon(k,acat) = 1.e-12
+>    !      aeromas(k,acat) = (rdry(k)*aero_rg2rm(acat))**3.*aerocon(k,acat)*aero_rhosol(acat)/0.23873
+>    !   endif
+180,185c194,199
+<   if ((m1-1-abot) .ge. 1) then
+<     do while (k .le. m1-1)
+<       if (aerocon(k,acat) .gt. mincon) atop = k
+<       k = k + 1
+<     enddo
+<   endif
+---
+> !  if ((m1-1-abot) .ge. 1) then
+> !    do while (k .le. m1-1)
+> !      if (aerocon(k,acat) .gt. mincon) atop = k
+> !      k = k + 1
+> !    enddo
+> !  endif
+188,189c202,206
+<   if ((abot .le. atop) .and. (abot .lt. m1-1)) then
+<    do k = abot,atop
+---
+>   !if ((abot .le. atop) .and. (abot .lt. m1-1)) then
+>    gaincon(:)=0.
+>    gainmas(:)=0.
+>    do k = 2,m1-1!abot,atop
+>    if (aerocon(k,acat)>mincon) then
+211,216d227
+< !#####Saleeby testing
+< !rhodry = 1769. !(kg/m3)
+< !rh = 0.999
+< !epsilonsol = 1.0
+< !#####Saleeby testing
+< 
+230,233d240
+< !#####Saleeby testing
+< !rwet(k)=rdryum(k)
+< !#####Saleeby testing
+< 
+256,261d262
+< !#####Saleeby testing
+< !totrr=2.777e-4 !1mm/hr pcpvx(k,lcat)
+< !rx(k,lcat)=4.192e-9 !(kg/kg) gives Dpc=.0002m,.2mmrain
+< !cx(k,lcat)=1. !(#/kg)
+< !#####Saleeby testing
+< 
+268,275d268
+< !#####Saleeby testing
+< !if(acat==1.and.lcat==2.and.i==15.and.j==1.and.k==3)then
+< !print*,'Epsilonsol,RH,rhod,rhow',epsilonsol,rh,rhodry,rhowet
+< !print*,'Dry R,D(um),Epsilon,RH:   ',rdryum(k),rdryum(i)*2.0
+< !print*,'Wet R,D(um),Scavrate(/hr):',rwet(k),rwet(k)*2.0,ScaRate*3600.
+< !endif
+< !#####Saleeby testing
+< 
+342,347d334
+< !#####Saleeby testing
+< !itype = 0
+< !ustar = 0.43 !ocean
+< !ustar = 0.97 !vegetation
+< !#####Saleeby testing
+< 
+433,439d419
+< !#####Saleeby testing
+< !if(acat==1.and.i==5.and.j==5.and.k==3) &
+< ! print*,'Grav Settling V (cm/s):',Vd*100.
+< !if(acat==1.and.i==5.and.j==5.and.k==2) &
+< ! print*,'Sfc  Settling V (cm/s):',Vd*100.,iusetype
+< !#####Saleeby testing
+< 
+459a440
+>    endif !aerocon>mincon
+461c442
+<   endif !End conditional deposition over layers containing aerosols
+---
+> !  endif !End conditional deposition over layers containing aerosols
+464,466c445,447
+<   if (abot .lt. atop) then
+<     if (abot .eq. 2) then
+<      do k = abot,atop-1
+---
+> !  if (abot .lt. atop) then
+> !    if (abot .eq. 2) then
+>      do k = 2,m1-3!abot,atop-1
+480,483c461,464
+<     else
+<      do k = abot-1,atop-1
+<        aerocon(k,acat) = aerocon(k,acat) + gaincon(k+1)
+<        aeromas(k,acat) = aeromas(k,acat) + gainmas(k+1)
+---
+> !    else
+> !     do k = abot-1,atop-1
+> !       aerocon(k,acat) = aerocon(k,acat) + gaincon(k+1)
+> !       aeromas(k,acat) = aeromas(k,acat) + gainmas(k+1)
+485,496c466,477
+<        if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8) &
+<          .and.aeromas(k+1,acat)>0.) then 
+<          epsilonsol = min(1.0,regenmas(k+1,5)/aeromas(k+1,acat))
+<          regenmas(k,5) = regenmas(k,5)+gainmas(k+1)*epsilonsol
+<        elseif(iccnlev>=2.and.itrkepsilon==1.and.(acat==9) &
+<          .and.aeromas(k+1,acat)>0.) then 
+<          epsilonsol = min(1.0,regenmas(k+1,3)/aeromas(k+1,acat))
+<          regenmas(k,3) = regenmas(k,3)+gainmas(k+1)*epsilonsol
+<        endif
+<      enddo
+<     endif
+<   endif
+---
+> !       if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8) &
+> !         .and.aeromas(k+1,acat)>0.) then 
+> !         epsilonsol = min(1.0,regenmas(k+1,5)/aeromas(k+1,acat))
+> !         regenmas(k,5) = regenmas(k,5)+gainmas(k+1)*epsilonsol
+> !       elseif(iccnlev>=2.and.itrkepsilon==1.and.(acat==9) &
+> !         .and.aeromas(k+1,acat)>0.) then 
+> !         epsilonsol = min(1.0,regenmas(k+1,3)/aeromas(k+1,acat))
+> !         regenmas(k,3) = regenmas(k,3)+gainmas(k+1)*epsilonsol
+> !       endif
+> !     enddo
+> !    endif
+> !  endif
+587c568
+<   print*, "RH>1, dwet:",dwet, "ddry:", ddry, "rh:",rh
+---
+>   !print*, "RH>1, dwet:",dwet, "ddry:", ddry, "rh:",rh
+598c579
+<  print *, "0.001<RH<1, dwet:",dwet,  "ddry:", ddry 
+---
+>  !print *, "0.001<RH<1, dwet:",dwet,  "ddry:", ddry 
+Only in ../../src_old/6.1.22/micro: diff.txt
+diff -r micro/diffs.txt ../../src_old/6.1.22/micro/diffs.txt
+0a1,25
+> 263,265c263,265
+> < ! if (time .eq. fccnstart .and. iccnlev == 2) then
+> < !  CALL remove_aero_init(dn0(1),m1,i,j)
+> < ! endif
+> ---
+> > if (time .eq. fccnstart .and. iccnlev == 2) then
+> >  CALL remove_aero_init(dn0(1),m1,i,j)
+> > endif
+> 290,305d289
+> <          ,glat,rtgt,topt  &
+> <          ,radiate%albedt  (i,j) ,radiate%cosz  (i,j)  &
+> <          ,radiate%rlongup (i,j) ,radiate%rshort(i,j)  &
+> <          ,radiate%rlong   (i,j)  &
+> <          ,zm,zt,rv(1),dn0(1),pi0(1),pp(1),radiate%fthrd(1,i,j),i,j,ngr &
+> <          !Saleeby(2011): Variables for the radiatively active aerosol
+> <          ,radiate%bext(1,i,j),radiate%swup(1,i,j),radiate%swdn(1,i,j) &
+> <          ,radiate%lwup(1,i,j),radiate%lwdn(1,i,j))
+> <    endif
+> < endif
+> < 
+> < if (iswrtyp .eq. 4 .or. ilwrtyp .eq. 4) then
+> <    if (mod(time + .001,radfrq) .lt. dtlt .or. time .lt. .001) then
+> <       !Saleeby(2008): Change passing of 7 to 8 if adding drizzle mode
+> <       ! and modify locations in radcalc3 and radcomp3 to match
+> <       CALL radcalc4 (m1,maxnzp,7,iswrtyp,ilwrtyp  &
+diff -r micro/mic_misc.f90 ../../src_old/6.1.22/micro/mic_misc.f90
+752c752
+<          if(jnmb(8).eq.0) xvapdrizt(k) = xvapdrizt(k) + (rx(k,1)-fac2)
+---
+>          if(jnmb(8).eq.0) xvapdrizt(k) = xvapdrizt(k) + rx(k,1)!(rx(k,1)-fac2)
+757,759c757,759
+<             fac2aero = cnmhx(k,1)*gammp(gnu(lcat)+3.,dmean/dn1)
+<             cnmhx(k, 2) = (cnmhx(k, 1) - fac2aero)
+<             cnmhx(k, 1) = fac2aero
+---
+>             !fac2aero = cnmhx(k,1)*gammp(gnu(lcat)+3.,dmean/dn1)
+>             cnmhx(k, 2) = cnmhx(k,2) + cnmhx(k,1)!(cnmhx(k, 1) - fac2aero)
+>             cnmhx(k, 1) = 0.!fac2aero
+772a773,778
+>             if (iccnlev >=2) then
+>                fac2aero = cnmhx(k,1)*fac1/cx(k,1)
+>                cnmhx(k, 2) = cnmhx(k,2) + (cnmhx(k,1)-fac2aero)
+>                cnmhx(k, 1) = fac2aero
+>             endif
+>             xvapdrizt(k) = xvapdrizt(k) + (rx(k,1)-fac2)
+diff -r micro/mic_nucpre.f90 ../../src_old/6.1.22/micro/mic_nucpre.f90
+47c47
+<     !  if(aerocon(k,acat) > mincon .and. aeromas(k,acat) > minmas) then
+---
+>       if(aerocon(k,acat) > mincon .and. aeromas(k,acat) > minmas) then
+49,51c49,51
+<     !    rhosol=aero_rhosol(acat)
+<     !    aero_rg(acat)=((0.23873/rhosol*aeromas(k,acat)/aerocon(k,acat)) &
+<     !                 **(1./3.))/aero_rg2rm(acat)
+---
+>         rhosol=aero_rhosol(acat)
+>         aero_rg(acat)=((0.23873/rhosol*aeromas(k,acat)/aerocon(k,acat)) &
+>                      **(1./3.))/aero_rg2rm(acat)
+62c62
+<     !  endif
+---
+>       endif

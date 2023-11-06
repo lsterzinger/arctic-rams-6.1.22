@@ -1,0 +1,104 @@
+#############################################################################
+# Define make (gnu make works best)
+#############################################################################
+MAKE=/usr/bin/make
+
+#############################################################################
+# Set your RAMS root path and version number
+#############################################################################
+RAMS_ROOT=/home/lsterzin/arctic_model/model/arctic-rams-6.1.22
+RAMS_VERSION=6.1.22
+
+HDF5_ROOT=$(HDF5_HOME)
+MPI_ROOT=$(OPENMPI_HOME)
+# HDF5_ROOT=/share/apps/hdf5-1.10.1/intel
+#MPI_ROOT=/usr
+#MPI_ROOT=/share/apps/openmpi-2.0.1/gcc-4.8
+# MPI_ROOT=/share/apps/openmpi-3.1.2/intel-2019
+
+
+MODEL=$(RAMS_ROOT)/src/$(RAMS_VERSION)
+UTILS_INCS=-I$(MODEL)/include
+
+#############################################################################
+# HDF libraries
+# Note that linking libraries below are in a particular order to work!
+#############################################################################
+HDF5_LIBS=-L$(HDF5_ROOT)/lib -lhdf5_hl -lhdf5 -lz
+HDF5_INCS=-I$(HDF5_ROOT)/include
+HDF5_DEFS=
+
+############################################################################# # TYPE OF COMPUTER SYSTEM (used for DEFINE statements for intrinsic calls)
+#############################################################################
+CMACH=PC_LINUX1  #Standard Linux (only option available now)
+
+#############################################################################
+# LINUX FORTRAN compiler choice and flags (ifort)
+#############################################################################
+# Note that Intel Fortran optimizations greater than -O1 will not produce
+# identical results for parallel history restarts due to reduced precision,
+# unless you use "-fp-model precise" to force precision. Suggesting
+# "-O1 -fp-model precise" for research applications.
+#F_OPTS=-free -g -traceback -check bounds -check uninit  #testing options
+#F_OPTS=-free -g -traceback -O1 -ftrapuv                 #testing options
+#F_OPTS=-free -g -traceback -O0 -fp-model scrict -fpe0   #testing options
+#----------------------------------------------------------------------------
+#Fortran For 32 bit
+#F_COMP=/opt/intel/composer_xe_2011_sp1.8.273/bin/ia32/ifort
+#F_OPTS=-free -O1 -fp-model precise
+#LOADER_OPTS=
+
+#Fortran For 64 bit
+F_COMP=ifort
+F_OPTS=-free -O0 -fp-model precise -g 
+LOADER_OPTS=
+
+#############################################################################
+# LINUX FORTRAN compiler choice and flags (pgf90)
+#############################################################################
+#F_COMP=/usr/local/pgi/linux86-64/2016/bin/pgf90
+#F_OPTS=-Mfree -O2 -Kieee
+#LOADER_OPTS=-Wl, -Bstatic
+
+#############################################################################
+# LINUX gfortran/gcc compiler choice and flags
+#############################################################################
+#F_COMP=gfortran
+#F_OPTS=-O2 -fno-range-check -Wall
+#LOADER_OPTS=
+#############################################################################
+# LINUX C compiler choice and flags (gcc)
+#############################################################################
+C_COMP=mpicc
+C_OPTS=-O0 -DUNDERSCORE -DLITTLE -g
+#C_COMP=gcc
+#############################################################################
+# Libraries for linking (Defaults here may be needed for MPI software)
+#############################################################################
+#For 32 bit
+#LIBS=-L/usr/lib -lrt -lpthread -lutil
+#For 64 bit
+LIBS=-L/usr/lib64 -lrt -lpthread -lutil 
+
+#############################################################################
+# System archive command syntax
+#############################################################################
+ARCHIVE=ar rsU
+
+#############################################################################
+# MPI - parallel processing choices
+#############################################################################
+#PAR_LIBS=    #leave blank (override below if using MPI)
+#PAR_DEFS=    #leave blank (override below if using MPI)
+#----------------------------------------------------------------------------
+# If using MPI libraries:
+#----------------------------------------------------------------------------
+#---------------LINUX MPICH----------------------------------------------------
+#PAR_INCS=-I$(MPI_ROOT)/include
+#PAR_LIBS=-L$(MPI_ROOT)/lib -lmpich -lmpl
+#PAR_DEFS=-DRAMS_MPI
+
+#---------------LINUX OPENMPI------------------------------------------------
+PAR_INCS=-I$(MPI_ROOT)/include
+PAR_LIBS=-L$(MPI_ROOT)/lib -lmpi
+PAR_DEFS=-DRAMS_MPI

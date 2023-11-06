@@ -1,0 +1,221 @@
+1,17c1
+< !
+< ! Copyright (C) 1991-2004  ; All Rights Reserved ; Colorado State University
+< ! Colorado State University Research Foundation ; ATMET, LLC
+< !
+< ! This file is free software; you can redistribute it and/or modify it under the
+< ! terms of the GNU General Public License as published by the Free Software
+< ! Foundation; either version 2 of the License, or (at your option) any later version.
+< !
+< ! This software is distributed in the hope that it will be useful, but WITHOUT ANY
+< ! WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+< ! PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+< !
+< ! You should have received a copy of the GNU General Public License along with this
+< ! code; if not, write to the Free Software Foundation, Inc.,
+< ! 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+< !======================================================================================
+< 
+---
+> !##############################################################################
+106,114c90,98
+< !  if((acat==1 .and. iaerosol>0)  .or. &  ! CCN
+<     ! (acat==2 .and. iaerosol>0)  .or. &  ! GCCN
+<  if((acat==3 .and. idust>0)    .or. &  ! Small dust mode
+<     ! (acat==4 .and. idust>0)    .or. &  ! Large dust mode
+<     (acat==5 .and. isalt>0)) then!    .or. &  ! Salt film mode
+<     ! (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
+<     ! (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
+<     !(acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
+<     !(acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
+---
+>  if((acat==1 .and. iaerosol>0)  .or. &  ! CCN
+>     (acat==2 .and. iaerosol>0)  .or. &  ! GCCN
+>     (acat==3 .and. idust>0)    .or. &  ! Small dust mode
+>     (acat==4 .and. idust>0)    .or. &  ! Large dust mode
+>     (acat==5 .and. isalt>0)    .or. &  ! Salt film mode
+>     (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
+>     (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
+>     (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
+>     (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
+120c104
+<      if(aerocon(k,acat)>mincon .and. aeromas(k,acat)>minmas) then
+---
+>      if(aerocon(k,acat)>mincon .and. aeromas(k,acat)>=minmas) then
+128d111
+<  !print *, 'rdry', rdry(k)
+146,151c129,130
+<     if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8)) &
+<       regenmas(k,5) = regenmas(k,5) * dn0(k)
+< 
+<     if(iccnlev>=2.and.itrkepsilon==1.and.(acat==9)) &
+<       regenmas(k,3) = regenmas(k,3) * dn0(k)
+<       
+---
+>     if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8.or.acat==9)) &
+>       regenmas(k,acat-7) = regenmas(k,acat-7) * dn0(k)
+160,168c139,141
+<      aerocon(k,acat)=0.
+<      aeromas(k,acat)=0.
+< !     print*,'Aerosol deposition check (ngrid,k,i,j,acat):',ngrid,k,i,j,acat
+< !     print*,'aerocon,aeromas,r',aerocon(k,acat),aeromas(k,acat),rdry(k),cx(k,1)
+< !     stop
+<    endif
+<    if (aerocon(k,acat).ne.aerocon(k,acat)) then
+<       print*,'nan at deposition start',k,acat
+<       stop
+---
+>      print*,'Aerosol deposition check (ngrid,k,i,j,acat):',ngrid,k,i,j,acat
+>      print*,'aerocon,aeromas,r',aerocon(k,acat),aeromas(k,acat),rdry(k)
+>      stop
+207c180
+<     if(iccnlev>=2 .and. itrkepsilon==1 .and. (acat==8) &
+---
+>     if(iccnlev>=2 .and. itrkepsilon==1 .and. (acat==8.or.acat==9) &
+209,213c182,183
+<         epsilonsol = min(1.0,regenmas(k,5)/aeromas(k,acat))
+<     if(iccnlev>=2 .and. itrkepsilon==1 .and. (acat==9) &
+<     .and. aeromas(k,acat)>0.) &
+<       epsilonsol = min(1.0,regenmas(k,3)/aeromas(k,acat))
+<   
+---
+>         epsilonsol = min(1.0,regenmas(k,acat-7)/aeromas(k,acat))
+> 
+233c203
+<                    ,epsilonsol,rhodry,rhowet,acat)
+---
+>                    ,epsilonsol,rhodry,rhowet)
+324,332c294,296
+<         !   if(acat==8.or.acat==9) &
+<         !     regenmas(k,acat-7)=regenmas(k,acat-7)-amas_remove(lcat)*epsilonsol
+<         !  endif
+<           if(acat==8) then !regen salt
+<             regenmas(k,5)=regenmas(k,5)-amas_remove(lcat)*epsilonsol
+<           elseif(acat==9) then !regen dust
+<             regenmas(k,3)=regenmas(k,3)-amas_remove(lcat)*epsilonsol
+<           endif
+<         endif
+---
+>           if(acat==8.or.acat==9) &
+>             regenmas(k,acat-7)=regenmas(k,acat-7)-amas_remove(lcat)*epsilonsol
+>          endif
+462,465c426,427
+<     if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8)) &
+<       regenmas(k,5) = regenmas(k,5)-gainmas(k)*epsilonsol
+<     if(iccnlev>=2.and.itrkepsilon==1.and.(acat==9)) &
+<       regenmas(k,3) = regenmas(k,3)-gainmas(k)*epsilonsol
+---
+>     if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8.or.acat==9)) &
+>       regenmas(k,acat-7) = regenmas(k,acat-7)-gainmas(k)*epsilonsol
+476c438
+<        if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8) &
+---
+>        if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8.or.acat==9) &
+478,483c440,441
+<          epsilonsol = min(1.0,regenmas(k+1,5)/aeromas(k+1,acat))
+<          regenmas(k,5) = regenmas(k,5)+gainmas(k+1)*epsilonsol
+<        elseif(iccnlev>=2.and.itrkepsilon==1.and.(acat==9) &
+<          .and.aeromas(k+1,acat)>0.) then 
+<          epsilonsol = min(1.0,regenmas(k+1,5)/aeromas(k+1,acat))
+<          regenmas(k,3) = regenmas(k,3)+gainmas(k+1)*epsilonsol
+---
+>          epsilonsol = min(1.0,regenmas(k+1,acat-7)/aeromas(k+1,acat))
+>          regenmas(k,acat-7) = regenmas(k,acat-7)+gainmas(k+1)*epsilonsol
+491,495c449
+<        if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8) &
+<          .and.aeromas(k+1,acat)>0.) then 
+<          epsilonsol = min(1.0,regenmas(k+1,5)/aeromas(k+1,acat))
+<          regenmas(k,5) = regenmas(k,5)+gainmas(k+1)*epsilonsol
+<        elseif(iccnlev>=2.and.itrkepsilon==1.and.(acat==9) &
+---
+>        if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8.or.acat==9) &
+497,498c451,452
+<          epsilonsol = min(1.0,regenmas(k+1,3)/aeromas(k+1,acat))
+<          regenmas(k,3) = regenmas(k,3)+gainmas(k+1)*epsilonsol
+---
+>          epsilonsol = min(1.0,regenmas(k+1,acat-7)/aeromas(k+1,acat))
+>          regenmas(k,acat-7) = regenmas(k,acat-7)+gainmas(k+1)*epsilonsol
+514,523c468,471
+<     if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8)) then
+<       regenmas(k,5) = regenmas(k,5) / dn0(k)
+<       if(regenmas(k,5)<0.)then
+<         print*,'RegenNeg',k,i,j,regenmas(k,5),aeromas(k,acat)
+<         stop
+<       endif
+<     elseif(iccnlev>=2.and.itrkepsilon==1.and.(acat==9)) then
+<       regenmas(k,3) = regenmas(k,3) / dn0(k)
+<       if(regenmas(k,3)<0.)then
+<         print*,'RegenNeg',k,i,j,regenmas(k,3),aeromas(k,acat)
+---
+>     if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8.or.acat==9)) then
+>       regenmas(k,acat-7) = regenmas(k,acat-7) / dn0(k)
+>       if(regenmas(k,acat-7)<0.)then
+>         print*,'RegenNeg',k,i,j,regenmas(k,acat-7),aeromas(k,acat)
+536c484
+< Subroutine cal_dwet (T,rh,ddry,dwet,vhoff,epsilonsol,rhodry,rhowet,acat)
+---
+> Subroutine cal_dwet (T,rh,ddry,dwet,vhoff,epsilonsol,rhodry,rhowet)
+549c497
+< integer :: vhoff,acat
+---
+> integer :: vhoff
+552c500
+< real :: alpha,beta, phi, xk1, xk2, xe, estimat_dwet
+---
+> real :: alpha,beta,phi,xk1,xk2,xe,estimat_dwet,rhmax
+554c502,504
+< beta = exp(0.00077*rh/(1.009-rh))
+---
+> !Use rhmax for beta and alpha terms to prevent possible 
+> !division by zero or very small number
+> rhmax=min(rh,1.000)
+556,557c506,507
+< ! calculate alpha
+< phi = 1.058
+---
+> !calculate beta
+> beta = exp(0.00077*rhmax/(1.009-rhmax))
+558a509,510
+> ! calculate phi
+> phi = 1.058
+560c512
+<   phi = 1.058-0.0155*(rh-0.97)/(1.02-rh**1.4)
+---
+>   phi = 1.058-0.0155*(rhmax-0.97)/(1.02-rhmax**1.4)
+563,567c515,518
+< alpha = 1.2*exp(0.066*rh/(phi-rh))
+< 
+< xk1 = 10.2 - 23.7*rh + 14.5*rh**2.
+< xk2 = -6.7 + 15.5*rh - 9.2*rh**2.
+< 
+---
+> !calculate alpha
+> alpha = 1.2*exp(0.066*rhmax/(phi-rhmax))
+> xk1 = 10.2 - 23.7*rhmax + 14.5*rhmax**2.
+> xk2 = -6.7 + 15.5*rhmax - 9.2*rhmax**2.
+575c526
+< estimat_dwet = alpha * (ddry)** beta
+---
+> estimat_dwet = alpha * (ddry)**beta
+590,594c541,544
+<  if (rh .ge. 1) then
+<   dwet=sqrt((vhoff*epsilonsol*18.*461.*rhodry*T)/(2.*0.07*132.*1.e6))*(ddry)**1.5
+<   if (dwet .lt. ddry) dwet = ddry
+<   !print*, "RH>1, dwet:",dwet, "ddry:", ddry, "rh:",rh
+<  endif
+---
+> if (rh .ge. 1) then
+>  dwet=sqrt((vhoff*epsilonsol*18.*461.*rhodry*T)/(2.*0.07*132.*1.e6))*(ddry)**1.5
+>  if (dwet .lt. ddry) dwet = ddry
+> endif
+598c548
+< ! has the formula form r > 0.08um
+---
+> ! has the formula for r > 0.08um
+604d553
+<  !print *, "0.001<RH<1, dwet:",dwet,  "ddry:", ddry 
+619c568,569
+<  print*,'Bad aerosol density in cal_dwet',rhodry,rhowet,ddry,dwet,acat
+---
+>  print*,'Bad aerosol density in cal_dwet',rhodry,rhowet,ddry,dwet &
+>     ,volumeratio,estimat_dwet,rh,rhmax

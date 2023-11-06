@@ -27,7 +27,7 @@ integer :: m1,i,j,k,k1cnuc,k2cnuc,k1dnuc,k2dnuc,ktop,kbot &
 real :: rnuc,excessrv,rcnew,vaprccn,num_ccn_ifn,epstemp
 real, dimension(m1) :: rv,wp,dn0
 real :: tairc_nuc,w_nuc,rg_nuc,tab,sfcareatotal
-real :: rjw,wtw1,wtw2,rjconcen,wtcon1,wtcon2,jrg1,jrg2,eps1,eps2
+real :: wgt,rjw,wtw1,wtw2,rjconcen,wtcon1,wtcon2,jrg1,jrg2,eps1,eps2
 real :: total_cld_nucc,total_drz_nucc,total_cld_nucr,total_drz_nucr
 real, dimension(9) :: concen_tab
 
@@ -96,14 +96,14 @@ elseif (jnmb(1) >= 5) then
       concen_tab(acat) = 0.0
       concen_nuc = 0.0
 
-      if((acat==1)                  .or. &  ! CCN
-         (acat==2)                  .or. &  ! GCCN
+      !if((acat==1)                  .or. &  ! CCN
+      !   (acat==2)                  .or. &  ! GCCN
          ! (acat==3 .and. idust>0)    .or. &  ! Small dust mode
          ! (acat==4 .and. idust>0)    .or. &  ! Large dust mode
-         (acat==5 .and. isalt>0)    .or. &  ! Salt film mode
-         (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
-         (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
-         (acat==8 .and. iccnlev>=2)) then  ! Small regenerated aerosol
+      if   (acat==5 .and. isalt>0) then!    .or. &  ! Salt film mode
+      !   (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
+      !   (acat==7 .and. isalt>0)) then !   .or. &  ! Salt spume mode
+   !      (acat==8 .and. iccnlev>=2)) then  ! Small regenerated aerosol
          ! (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
 
        !Assign aerosol specs to local arrays
@@ -156,7 +156,7 @@ elseif (jnmb(1) >= 5) then
         !********** AEROSOL NUMBER, MASS, & MEDIAN RADIUS CONSTRAINTS ********
         !rjconcen = max(1., min(7., 2. * log10(1.e-7 * concen_nuc) + 1.))
 !Adele - smallest concentration is now about 3/mg
-        rjconcen = max(1., min(7., 2. * log10(1.e-7 * concen_nuc)))
+        rjconcen = max(1., min(7., 2. * log10(1.e-7 * concen_nuc) + 2.))
         jconcen = int(rjconcen)
         wtcon2 = rjconcen - float(jconcen)
         wtcon1 = 1. - wtcon2
@@ -208,8 +208,8 @@ elseif (jnmb(1) >= 5) then
          !     ,wtcon2,jrg1,jrg2,epstab,jw,jconcen,jtemp,rgccn1,tab)
         !  endif
         !endif
+        tab = min(.99,tab)
         concen_tab(acat) = concen_nuc * tab * epstemp
-
        endif !if concen_nuc > mincon
       endif !if acat aerosol type is valid
    enddo !looping over aerocat
@@ -219,14 +219,14 @@ elseif (jnmb(1) >= 5) then
    do acat=1,aerocat
     aero_ratio(acat) = 0.0  ! Aerosol fraction
     aero_vap(acat)   = 0.0  ! Total surface area of aerosol category
-    if((acat==1)                  .or. &  ! CCN
-       (acat==2)                  .or. &  ! GCCN
+    !if((acat==1)                  .or. &  ! CCN
+    !   (acat==2)                  .or. &  ! GCCN
       !  (acat==3 .and. idust>0)    .or. &  ! Small dust mode
       !  (acat==4 .and. idust>0)    .or. &  ! Large dust mode
-       (acat==5 .and. isalt>0)    .or. &  ! Salt film mode
-       (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
-       (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
-       (acat==8 .and. iccnlev>=2)) then  ! Small regenerated aerosol
+     if  (acat==5 .and. isalt>0) then!    .or. &  ! Salt film mode
+    !   (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
+    !   (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
+    !   (acat==8 .and. iccnlev>=2)) then  ! Small regenerated aerosol
       !  (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
        if(aerocon(k,acat) > mincon) then
         aero_vap(acat) = (4.0 * 3.14159 * aero_rg(acat)**2) * concen_tab(acat)
@@ -235,7 +235,7 @@ elseif (jnmb(1) >= 5) then
     endif
    enddo
    if(sfcareatotal > 0.0) then
-    do acat=1,aerocat
+    do acat=5,5!1,aerocat
       aero_ratio(acat) = aero_vap(acat) / sfcareatotal
     enddo
    endif
@@ -247,16 +247,16 @@ elseif (jnmb(1) >= 5) then
    total_drz_nucr=0.0
    do acat=1,aerocat
      ctc = 0
-     if((acat==1)                  .or. &  ! CCN
-        (acat==2)                  .or. &  ! GCCN
+     !if((acat==1)                  .or. &  ! CCN
+       ! (acat==2)                  .or. &  ! GCCN
       ! Lucas - Turned off cloud nucleation from Dust (01.31.2022)
-        (acat==3 .and. idust>0)    .or. &  ! Small dust mode
-        (acat==4 .and. idust>0)    .or. &  ! Large dust mode
-        (acat==5 .and. isalt>0)    .or. &  ! Salt film mode
-        (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
-        (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
-        (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
-        (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
+      !  (acat==3 .and. idust>0)then!    .or. &  ! Small dust mode
+       ! (acat==4 .and. idust>0)    .or. &  ! Large dust mode
+       if (acat==5 .and. isalt>0 .and. aero_rg(acat)>0.) then!   .or. &  ! Salt film mode
+       ! (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
+       ! (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
+       ! (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
+       ! (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
       !Assign aerosol specs to local arrays
       concen_nuc = aerocon(k,acat)
       aeromass   = aeromas(k,acat)
@@ -309,14 +309,14 @@ elseif (jnmb(1) >= 5) then
 
         !Add nucleated cloud water and number here if removing aerosol   
         if(iccnlev>=1)then
-         if (time .ge. fccnstart .and. time .lt. fccnstart + 60.) then 
-            print *, "Skipping cloud nuc"
-            cx(k,drop) = cx(k,drop)
-            rx(k,drop) = rx(k,drop) 
-         else
+         !if (time .ge. fccnstart .and. time .lt. fccnstart + 60.) then 
+            !print *, "Skipping cloud nuc"
+         !   cx(k,drop) = cx(k,drop)
+         !   rx(k,drop) = rx(k,drop) 
+         !else
             cx(k,drop) = cx(k,drop) + concen_tab(acat)
             rx(k,drop) = rx(k,drop) + vaprccn
-         endif
+         !endif
           !Nucleation budget diagnostics
           if(imbudget >= 1) then
             xnuccldrt(k) = xnuccldrt(k) + vaprccn * budget_scalet
@@ -415,7 +415,9 @@ elseif (jnmb(1) >= 5) then
              !Further immersion freezing tracking for (acat=1,2,3,4,8,9)
              if(iifn==3.and.(acat==1.or.acat==2.or.acat==3.or.acat==4.or.acat==9) & 
                .and. rcm > 0.25e-6 .and. ic>1) num_ccn_ifn=concen_tab(acat)
-             ccnmass=ccnmas(ic-1)
+             wgt = (concen_tab(acat)-ccncon(ic))/(ccncon(ic-1)-ccncon(ic))
+             ccnmass=wgt*ccnmas(ic-1) + (1-wgt)*ccnmas(ic)
+             !ccnmass=ccnmas(ic-1)
              go to 111
            endif
           enddo
@@ -430,6 +432,7 @@ elseif (jnmb(1) >= 5) then
           !Convert #/m3 back to #/kg and kg/m3 back to kg/kg
           concen_tab(acat) = concen_tab(acat) / dn0(k) !Convert #/m3 to #/kg
           ccnmass          = ccnmass          / dn0(k) !Convert kg/m3 to kg/kg
+          ccnmass = min(ccnmass,aeromas(k,acat)*.9999)
           num_ccn_ifn      = num_ccn_ifn      / dn0(k) !Convert #/m3 to #/kg
 
           !Subtract off aerosol mass and number and keep both + or zero
@@ -508,6 +511,7 @@ else
  stop 'icloud'
 endif !if number prediction of cloud droplets
 
+!print*,'Adele'
 return
 END SUBROUTINE cldnuc
 
@@ -1006,13 +1010,13 @@ do k = 2,m1-1
    !***********************************************************************
 
    !Add new ice crystals to pristine ice category
-   if (time .ge. fccnstart .and. time .lt. fccnstart + 60.) then 
-      rx(k,3) = rx(k,3)
-      cx(k,3) = cx(k,3) 
-   else
+   !if (time .ge. fccnstart .and. time .lt. fccnstart + 60.) then 
+   !   rx(k,3) = rx(k,3)
+   !   cx(k,3) = cx(k,3) 
+   !else
       rx(k,3) = rx(k,3) + vapnucr
       cx(k,3) = cx(k,3) + vapnuc
-   endif
+   !endif
 
    pcthaze = haznuc / max(1.e-30,(haznuc + diagni + immerin))
 

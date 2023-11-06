@@ -103,21 +103,21 @@ do acat=1,aerocat
  rundep=0
 
  !Set up profile of aerosol properties if they exist
- if((acat==1 .and. iaerosol>0)  .or. &  ! CCN
-    (acat==2 .and. iaerosol>0)  .or. &  ! GCCN
-    (acat==3 .and. idust>0)    .or. &  ! Small dust mode
-    (acat==4 .and. idust>0)    .or. &  ! Large dust mode
-    (acat==5 .and. isalt>0)    .or. &  ! Salt film mode
-    (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
-    (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
-    (acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
-    (acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
+!  if((acat==1 .and. iaerosol>0)  .or. &  ! CCN
+    ! (acat==2 .and. iaerosol>0)  .or. &  ! GCCN
+ if((acat==3 .and. idust>0)    .or. &  ! Small dust mode
+    ! (acat==4 .and. idust>0)    .or. &  ! Large dust mode
+    (acat==5 .and. isalt>0)) then!    .or. &  ! Salt film mode
+    ! (acat==6 .and. isalt>0)    .or. &  ! Salt jet mode
+    ! (acat==7 .and. isalt>0)    .or. &  ! Salt spume mode
+    !(acat==8 .and. iccnlev>=2) .or. &  ! Small regenerated aerosol
+    !(acat==9 .and. iccnlev>=2)) then   ! Large regenerated aerosol
     rundep=1
     epsilonsol = aero_epsilon(acat)
 
     !Initially compute dry radius (meters)
     do k = 2,m1-1
-     if(aerocon(k,acat)>mincon .and. aeromas(k,acat)>=minmas) then
+     if(aerocon(k,acat)>mincon .and. aeromas(k,acat)>minmas) then
       rdry(k)=((0.23873/aero_rhosol(acat) &
         *aeromas(k,acat)/aerocon(k,acat))**(1./3.))/aero_rg2rm(acat)
      else
@@ -125,6 +125,7 @@ do acat=1,aerocat
      endif
     enddo
  endif
+ !print *, 'rdry', rdry(k)
 
  if(rundep==1) then !Run aerosol deposition if deposition turned on
 
@@ -142,8 +143,12 @@ do acat=1,aerocat
     aerocon(k,acat) = aerocon(k,acat) * dn0(k)
     aeromas(k,acat) = aeromas(k,acat) * dn0(k)
     !Aerosol and solubility tracking
-    if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8.or.acat==9)) &
-      regenmas(k,acat-7) = regenmas(k,acat-7) * dn0(k)
+    if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8)) &
+      regenmas(k,1) = regenmas(k,1) * dn0(k)
+
+    if(iccnlev>=2.and.itrkepsilon==1.and.(acat==9)) &
+      regenmas(k,2) = regenmas(k,2) * dn0(k)
+      
   enddo
 
   !Radii in mic_init are in meters: we need these to be in um
@@ -153,8 +158,12 @@ do acat=1,aerocat
    if((aerocon(k,acat)>mincon .and. aeromas(k,acat)<=0.) &
        .or.aeromas(k,acat)<0.0.or.aerocon(k,acat)<0.0) then
      print*,'Aerosol deposition check (ngrid,k,i,j,acat):',ngrid,k,i,j,acat
-     print*,'aerocon,aeromas,r',aerocon(k,acat),aeromas(k,acat),rdry(k)
+     print*,'aerocon,aeromas,r',aerocon(k,acat),aeromas(k,acat),rdry(k),cx(k,1)
      stop
+   endif
+   if (aerocon(k,acat).ne.aerocon(k,acat)) then
+      print*,'nan at deposition start',k,acat
+      stop
    endif
   enddo
 
@@ -182,6 +191,7 @@ do acat=1,aerocat
   !Loop wet and dry deposition over layers containing aerosol
   if ((abot .le. atop) .and. (abot .lt. m1-1)) then
    do k = abot,atop
+    if (rdryum(k)>0.) then
     !calculate  layer thickness
     zthick = xztop(k) - xztop(k-1)
     !rh and temp
@@ -193,10 +203,13 @@ do acat=1,aerocat
     rh = eee/es
 
     !Aerosol and solubility tracking
-    if(iccnlev>=2 .and. itrkepsilon==1 .and. (acat==8.or.acat==9) &
+    if(iccnlev>=2 .and. itrkepsilon==1 .and. (acat==8) &
       .and. aeromas(k,acat)>0.) &
-        epsilonsol = min(1.0,regenmas(k,acat-7)/aeromas(k,acat))
-
+        epsilonsol = min(1.0,regenmas(k,1)/aeromas(k,acat))
+    if(iccnlev>=2 .and. itrkepsilon==1 .and. (acat==9) &
+    .and. aeromas(k,acat)>0.) &
+      epsilonsol = min(1.0,regenmas(k,2)/aeromas(k,acat))
+  
     !Set default density (kg/m3) in k loop and update if particle deliquesced
     rhodry=aero_rhosol(acat)
 
@@ -216,7 +229,7 @@ do acat=1,aerocat
       rhowet  = rhodry
     else
       CALL cal_dwet (ttair,rh,rdryum(k),rwet(k),aero_vanthoff(acat) &
-                   ,epsilonsol,rhodry,rhowet)
+                   ,epsilonsol,rhodry,rhowet,acat)
     endif
 
 !#####Saleeby testing
@@ -307,9 +320,15 @@ do acat=1,aerocat
          cnmhx(k,lcat) = cnmhx(k,lcat) + amas_remove(lcat)
          if(itrkepsilon==1) then
           snmhx(k,lcat) = snmhx(k,lcat) + amas_remove(lcat) * epsilonsol
-          if(acat==8.or.acat==9) &
-            regenmas(k,acat-7)=regenmas(k,acat-7)-amas_remove(lcat)*epsilonsol
-         endif
+        !   if(acat==8.or.acat==9) &
+        !     regenmas(k,acat-7)=regenmas(k,acat-7)-amas_remove(lcat)*epsilonsol
+        !  endif
+          if(acat==8) then !regen salt
+            regenmas(k,1)=regenmas(k,1)-amas_remove(lcat)*epsilonsol
+          elseif(acat==9) then !regen dust
+            regenmas(k,2)=regenmas(k,2)-amas_remove(lcat)*epsilonsol
+          endif
+        endif
          if(itrkdust==1 .and. (acat==3.or.acat==4)) &
           dnmhx(k,lcat) = dnmhx(k,lcat) + amas_remove(lcat)
        endif
@@ -407,14 +426,14 @@ do acat=1,aerocat
     endif ! Dry deposition at lowest layer
 
     !Dry deposition for all layers above the lowest
-    if (k .gt. 2) then
-       speed = sqrt(xup(k)**2. + xvp(k)**2.)
-       np = 1 !Tells code to use deposition over water for all upper layers
-       ustar = max(xustar(np),xubmin)
-       CALL vd_overwater (k,rwet(k)*2.,rdryum(k)*2.,ustar,speed,xmu &
-                        ,cc,rhodry,rhowet,diff,dn0(k),tmpvd)
-       Vd = tmpvd
-    endif !deposition for upper layers
+!    if (k .gt. 2) then
+!       speed = sqrt(xup(k)**2. + xvp(k)**2.)
+!       np = 1 !Tells code to use deposition over water for all upper layers
+!       ustar = max(xustar(np),xubmin)
+!       CALL vd_overwater (k,rwet(k)*2.,rdryum(k)*2.,ustar,speed,xmu &
+!                        ,cc,rhodry,rhowet,diff,dn0(k),tmpvd)
+!       Vd = tmpvd
+!    endif !deposition for upper layers
 
 !#####Saleeby testing
 !if(acat==1.and.i==5.and.j==5.and.k==3) &
@@ -433,43 +452,55 @@ do acat=1,aerocat
     if (gaincon(k) .gt. aerocon(k,acat)) then
         gaincon(k) = aerocon(k,acat)
     endif
-    aerocon(k,acat) = aerocon(k,acat) - gaincon(k)
+!Adele - limit dry deposition to lowest layer
+if(k.eq.2)    aerocon(k,acat) = aerocon(k,acat) - gaincon(k)
     if (gainmas(k) .gt. aeromas(k,acat)) then
         gainmas(k) = aeromas(k,acat)
     endif
-    aeromas(k,acat) = aeromas(k,acat) - gainmas(k)
+if(k.eq.2)    aeromas(k,acat) = aeromas(k,acat) - gainmas(k)
     !Aerosol and solubility tracking
-    if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8.or.acat==9)) &
-      regenmas(k,acat-7) = regenmas(k,acat-7)-gainmas(k)*epsilonsol
+    if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8)) &
+      regenmas(k,1) = regenmas(k,1)-gainmas(k)*epsilonsol
+    if(iccnlev>=2.and.itrkepsilon==1.and.(acat==9)) &
+      regenmas(k,2) = regenmas(k,2)-gainmas(k)*epsilonsol
+   endif
    enddo !Wet and Dry deposition loop over all vertical layers
   endif !End conditional deposition over layers containing aerosols
 
   !Add falling particles to layer below if more than 1 layer is present
-  if (abot .lt. atop) then
-    if (abot .eq. 2) then
-     do k = abot,atop-1
-       aerocon(k,acat) = aerocon(k,acat) + gaincon(k+1)
-       aeromas(k,acat) = aeromas(k,acat) + gainmas(k+1)
+!  if (abot .lt. atop) then
+!    if (abot .eq. 2) then
+!     do k = abot,atop-1
+!       aerocon(k,acat) = aerocon(k,acat) + gaincon(k+1)
+!       aeromas(k,acat) = aeromas(k,acat) + gainmas(k+1)
        !Aerosol and solubility tracking
-       if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8.or.acat==9) &
-         .and.aeromas(k+1,acat)>0.) then 
-         epsilonsol = min(1.0,regenmas(k+1,acat-7)/aeromas(k+1,acat))
-         regenmas(k,acat-7) = regenmas(k,acat-7)+gainmas(k+1)*epsilonsol
-       endif
-     enddo
-    else
-     do k = abot-1,atop-1
-       aerocon(k,acat) = aerocon(k,acat) + gaincon(k+1)
-       aeromas(k,acat) = aeromas(k,acat) + gainmas(k+1)
+!       if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8) &
+!         .and.aeromas(k+1,acat)>0.) then 
+!         epsilonsol = min(1.0,regenmas(k+1,5)/aeromas(k+1,acat))
+!         regenmas(k,5) = regenmas(k,5)+gainmas(k+1)*epsilonsol
+!       elseif(iccnlev>=2.and.itrkepsilon==1.and.(acat==9) &
+!         .and.aeromas(k+1,acat)>0.) then 
+!         epsilonsol = min(1.0,regenmas(k+1,5)/aeromas(k+1,acat))
+!         regenmas(k,3) = regenmas(k,3)+gainmas(k+1)*epsilonsol
+!       endif
+!     enddo
+!    else
+!     do k = abot-1,atop-1
+!       aerocon(k,acat) = aerocon(k,acat) + gaincon(k+1)
+!       aeromas(k,acat) = aeromas(k,acat) + gainmas(k+1)
        !Aerosol and solubility tracking
-       if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8.or.acat==9) &
-         .and.aeromas(k+1,acat)>0.) then 
-         epsilonsol = min(1.0,regenmas(k+1,acat-7)/aeromas(k+1,acat))
-         regenmas(k,acat-7) = regenmas(k,acat-7)+gainmas(k+1)*epsilonsol
-       endif
-     enddo
-    endif
-  endif
+!       if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8) &
+!         .and.aeromas(k+1,acat)>0.) then 
+!         epsilonsol = min(1.0,regenmas(k+1,5)/aeromas(k+1,acat))
+!         regenmas(k,5) = regenmas(k,5)+gainmas(k+1)*epsilonsol
+!       elseif(iccnlev>=2.and.itrkepsilon==1.and.(acat==9) &
+!         .and.aeromas(k+1,acat)>0.) then 
+!         epsilonsol = min(1.0,regenmas(k+1,3)/aeromas(k+1,acat))
+!         regenmas(k,3) = regenmas(k,3)+gainmas(k+1)*epsilonsol
+!       endif
+!     enddo
+!    endif
+!  endif
 
   !Lastly, convert aerosol back from x/m3 to x/kg
   !Similar to sedimentation of hydrometeors
@@ -481,10 +512,16 @@ do acat=1,aerocat
       stop
     endif
     !Aerosol and solubility tracking
-    if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8.or.acat==9)) then
-      regenmas(k,acat-7) = regenmas(k,acat-7) / dn0(k)
-      if(regenmas(k,acat-7)<0.)then
-        print*,'RegenNeg',k,i,j,regenmas(k,acat-7),aeromas(k,acat)
+    if(iccnlev>=2.and.itrkepsilon==1.and.(acat==8)) then
+      regenmas(k,1) = regenmas(k,1) / dn0(k)
+      if(regenmas(k,1)<0.)then
+        print*,'RegenNeg',k,i,j,regenmas(k,1),aeromas(k,acat)
+        stop
+      endif
+    elseif(iccnlev>=2.and.itrkepsilon==1.and.(acat==9)) then
+      regenmas(k,2) = regenmas(k,2) / dn0(k)
+      if(regenmas(k,2)<0.)then
+        print*,'RegenNeg',k,i,j,regenmas(k,2),aeromas(k,acat)
         stop
       endif
     endif
@@ -497,7 +534,7 @@ return
 END SUBROUTINE deposition_driver
 
 !##############################################################################
-Subroutine cal_dwet (T,rh,ddry,dwet,vhoff,epsilonsol,rhodry,rhowet)
+Subroutine cal_dwet (T,rh2,ddry,dwet,vhoff,epsilonsol,rhodry,rhowet,acat)
 
 !This routine calculates the growth of size for ammonium sulfate
 !follwoing formula Fitzgerald 1975, J. Appl. Meteo.,1044-1049.
@@ -509,12 +546,14 @@ Subroutine cal_dwet (T,rh,ddry,dwet,vhoff,epsilonsol,rhodry,rhowet)
 implicit none
 
 !Extern variables
-real :: t,rh,ddry,dwet,epsilonsol,rhodry,rhowet,volumeratio
-integer :: vhoff
+real :: t,rh,rh2,ddry,dwet,epsilonsol,rhodry,rhowet,volumeratio
+integer :: vhoff,acat
 
 !Internal variables
 real :: alpha,beta, phi, xk1, xk2, xe, estimat_dwet
 
+!Adele - limit rh to 1. Above 1, can encounter overflow issues.
+rh=min(1.,rh2)
 beta = exp(0.00077*rh/(1.009-rh))
 
 ! calculate alpha
@@ -551,10 +590,11 @@ estimat_dwet = alpha * (ddry)** beta
 !    epsilonsol: epsilon solubility fraction 0.0->1.0
 ! Can use molecular weights in non-m.k.s. units since they are a ratio below
 
-if (rh .ge. 1) then
- dwet=sqrt((vhoff*epsilonsol*18.*461.*rhodry*T)/(2.*0.07*132.*1.e6))*(ddry)**1.5
- if (dwet .lt. ddry) dwet = ddry
-endif
+ if (rh .ge. 1) then
+  dwet=sqrt((vhoff*epsilonsol*18.*461.*rhodry*T)/(2.*0.07*132.*1.e6))*(ddry)**1.5
+  if (dwet .lt. ddry) dwet = ddry
+  !print*, "RH>1, dwet:",dwet, "ddry:", ddry, "rh:",rh
+ endif
 
 ! The following double checks if caculated wet radius greater than
 ! the one at rh = 1., then set it to 1. Because Fitzgerald 1975 only
@@ -564,6 +604,16 @@ if (rh.lt.1 .and. rh.gt.0.001) then
  dwet=sqrt((vhoff*epsilonsol*18.*461.*rhodry*T)/(2.*0.07*132.*1.e6))*(ddry)**1.5
  if (dwet .lt. ddry) dwet = ddry
  if (estimat_dwet .lt. dwet) dwet = max(ddry,estimat_dwet)
+ !print *, "0.001<RH<1, dwet:",dwet,  "ddry:", ddry 
+endif
+
+!If particle swells, compute density of particle + water
+volumeratio = ddry**3 / dwet**3
+rhowet = rhodry * volumeratio + 1000. * (1.-volumeratio)
+
+if(rhowet<1000.0 .or. rhowet>2659.0 .or.rhodry<1000.0 .or. rhodry>2659.0) then
+ print*,'Bad aerosol density in cal_dwet',rhodry,rhowet,ddry,dwet,acat
+ stop
 endif
 
 !Limit max size to 20um diameter (10um radius) since this is used in
@@ -571,16 +621,8 @@ endif
 !Plus this is the equilibrium size and may be overestimated for large
 !particles since they take longer to reach equilibrium. What we really
 !need is instantaneous deliquescent size.
+!Adele - moved this below density calculation to avoid bad density.
 dwet = min(10.,dwet)
-
-!If particle swells, compute density of particle + water
-volumeratio = ddry**3 / dwet**3
-rhowet = rhodry * volumeratio + 1000. * (1.-volumeratio)
-
-if(rhowet<1000.0 .or. rhowet>2659.0 .or.rhodry<1000.0 .or. rhodry>2659.0) then
- print*,'Bad aerosol density in cal_dwet',rhodry,rhowet,ddry,dwet
- stop
-endif
 
 return
 END SUBROUTINE cal_dwet

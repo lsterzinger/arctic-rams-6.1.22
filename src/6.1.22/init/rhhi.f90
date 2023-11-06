@@ -15,7 +15,7 @@
 ! 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 !======================================================================================
 
-Subroutine inithh ()
+Subroutine inithh (sound_name)
 
 !--------------------------------------------------------
 ! Initialization of model grid, topography, and fields
@@ -28,10 +28,11 @@ use mem_grid
 implicit none
 
 integer :: ifm,icm
+character(len=*) :: sound_name
 
 !     Arrange the input sounding.
 
-CALL arrsnd ()
+CALL arrsnd (sound_name)
 
 !     For GRID 1, compute the 1-D reference state variables, the 3-D
 !     reference state variables, the 3-D model fields, the surface
@@ -67,7 +68,7 @@ return
 END SUBROUTINE inithh
 
 !##############################################################################
-Subroutine arrsnd ()
+Subroutine arrsnd (sound_name)
 
 use mem_grid
 use mem_scratch
@@ -78,6 +79,7 @@ implicit none
 
 integer :: nnns,k,kk,kkk
 real :: toffset,dir,spd,zold1,zold2,tavg,rtss,wt
+character(len=*) :: sound_name
 
 !     Arrange the input sounding
 
@@ -91,7 +93,7 @@ if (ps(1) .eq. 0.) then
       vs(nsndg) = 0.
    enddo
 
-   open(1,file='SOUND_IN',status='old',form='formatted')
+   open(1,file=sound_name,status='old',form='formatted')
    do nsndg=1,maxsndg
       read(1,*,end=1999) ps(nsndg),ts(nsndg),rts(nsndg),us(nsndg),vs(nsndg)
       if(ps(nsndg).le.0.) go to 1999
